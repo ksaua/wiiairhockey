@@ -47,7 +47,7 @@ public class TextureLoader {
 		
 		int pixbytes = (alpha ? 4 : 3);
 		
-		for (int i = 0; i < source.length; i += 4) {
+		for (int i = 0; i < source.length; i += pixbytes) {
 			byte temp = source[i];
 			source[i] = source[i + 2];
 			source[i + 2] = temp;

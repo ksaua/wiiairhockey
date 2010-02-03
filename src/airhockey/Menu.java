@@ -34,7 +34,7 @@ public class Menu implements State {
 		Font font = new Font("Courier New", Font.BOLD, 32);
 		ttf = new TrueTypeFont(font, true);
 		
-		background = new Sprite(TextureLoader.loadTexture("menubg.png"));
+		background = new Sprite(TextureLoader.loadTexture("menubg.jpg"));
 	}
 
 	@Override

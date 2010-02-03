@@ -74,7 +74,7 @@ public class TextureTest implements State {
 	public void init(Engine e, GraphicContext gc) {
 		GL11.glEnable( GL11.GL_TEXTURE_2D );
 
-		tex = TextureLoader.loadTexture("chesstex.png");
+		tex = TextureLoader.loadTexture("chesstex.jpg");
 	}
 
 	@Override

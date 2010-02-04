@@ -22,24 +22,34 @@ public class TextureLoader {
 	 * @return OpenGL bindable texture
 	 */
 	public static Texture loadTexture(String name) {
+		return loadTexture(name, true);
+	}
+	
+	/**
+	 * Load a texture in the data/textures folder.
+	 * @param name Filename
+	 * @param flip Flip the texture upside down?
+	 * @return OpenGL bindable texture
+	 */
+	public static Texture loadTexture(String name, boolean flip) {
 		
 		if (!cache.containsKey(name)) {
-			Texture t = loadTexture(new File("data/textures/" + name));
+			Texture t = loadTexture(new File("data/textures/" + name), flip);
 			cache.put(name, t);
 		}
 		
 		return cache.get(name);
 	}
 	
-	private static Texture loadTexture(File file) {
+	private static Texture loadTexture(File file, boolean flip) {
 		try {
-			return loadTexture(ImageIO.read(file));
+			return loadTexture(ImageIO.read(file), flip);
 		} catch(IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
-	private static Texture loadTexture(BufferedImage img) {
+	private static Texture loadTexture(BufferedImage img, boolean flip) {
 
 		boolean alpha = img.getAlphaRaster() != null;
 		
@@ -70,7 +80,11 @@ public class TextureLoader {
 		for (int x = 0; x < img.getWidth(); x++) {
 			for (int y = 0; y < img.getHeight(); y++) {
 				for (int i = 0; i < pixbytes; i++ ) {
-					pixels.put(pixbytes * (x + y * glwidth) + i,
+					
+					// Do we flip it upside down?
+					int realy = flip ? img.getHeight() - 1 - y : y;
+					
+					pixels.put(pixbytes * (x + realy * glwidth) + i,
 							   source[pixbytes * (x + y * img.getWidth()) + i]);
 				}
 			}

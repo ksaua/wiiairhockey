@@ -35,6 +35,7 @@ public class SimpleMoteFinder implements MoteFinderListener {
 		} catch (InterruptedException ex) {
 			log.error(ex.getMessage(), ex);
 		}
+		finder.stopDiscovery();
 		return mote;
 	}
 

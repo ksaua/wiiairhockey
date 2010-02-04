@@ -10,7 +10,9 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Timer;
 
-public class Engine {
+import engine.Wii.WiiEventCreator;
+
+public class Engine implements EventListener {
 	private HashMap<String, State> states;
 	private String currentState;
 	private boolean running;
@@ -73,6 +75,7 @@ public class Engine {
 
 
 
+
 		for (State state: states.values()) {
 			state.init(this, gc);
 		}
@@ -92,10 +95,12 @@ public class Engine {
 
 			State current = states.get(currentState);
 
-			for (Event e: events) {
-				current.event(this, gc, e);
+			synchronized (events) {
+				for (Event e: events) {
+					current.event(this, gc, e);
+				}
+				events.clear();	
 			}
-			events.clear();
 
 			current.update(this, gc, dt);
 			
@@ -119,5 +124,12 @@ public class Engine {
 	public void addState(String id, State state) {
 		if (states.isEmpty()) currentState = id;
 		states.put(id, state);
+	}
+
+	@Override
+	public void event(Event e) {
+		synchronized (events) {
+			events.add(e);
+		}
 	}
 }

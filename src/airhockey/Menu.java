@@ -3,6 +3,9 @@ package airhockey;
 
 import java.awt.Font;
 
+import motej.Mote;
+import motej.request.ReportModeRequest;
+
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -13,6 +16,8 @@ import engine.Sprite;
 import engine.State;
 import engine.TextureLoader;
 import engine.TrueTypeFont;
+import engine.Wii.SimpleMoteFinder;
+import engine.Wii.WiiEventCreator;
 
 
 public class Menu implements State {
@@ -22,10 +27,21 @@ public class Menu implements State {
 	
 	TrueTypeFont ttf;
 	
+	Mote mote;
+	
 	
 	@Override
 	public void event(Engine e, GraphicContext gc, Event ev) {
+		//if event
+		//somethingsomething.startDiscovery();
 		
+		//if motefindevent
+		
+		if (ev.type == Event.Type.wii_accelerometer_changed) {
+//			System.out.println(ev.x + ", " + ev.y + ", " + ev.z);
+		} else if (ev.type == Event.Type.wii_button_pressed) {
+			System.out.println(ev.wii_button);
+		}
 	}
 
 	@Override
@@ -37,6 +53,23 @@ public class Menu implements State {
 		
 		background = new Sprite(TextureLoader.loadTexture("menubg.jpg"));
 		mouse = new Sprite(TextureLoader.loadTexture("mouse-red.png"));
+		
+		
+		try {
+			SimpleMoteFinder smf = new SimpleMoteFinder();
+			mote = smf.findMote();
+			mote.setReportMode(ReportModeRequest.DATA_REPORT_0x31);
+
+			WiiEventCreator wec = new WiiEventCreator();
+			wec.addListener(e);
+			
+			mote.addAccelerometerListener(wec);
+			mote.addCoreButtonListener(wec);
+			
+		} catch (Exception ex) {
+			System.out.println("hei");
+		}
+
 	}
 
 	@Override

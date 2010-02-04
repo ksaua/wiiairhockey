@@ -50,24 +50,25 @@ public class TextureLoader {
 	}
 	
 	private static Texture loadTexture(BufferedImage img, boolean flip) {
+		img = convertToABGR(img);
 
-		boolean alpha = img.getAlphaRaster() != null;
-		
-		byte[] source;
-		
-		if (alpha)
-			source  = ((DataBufferByte)img.getAlphaRaster().getDataBuffer()).getData();
-		else 
-			source = ((DataBufferByte)img.getRaster().getDataBuffer()).getData();
-		
+		byte[] source = ((DataBufferByte)img.getAlphaRaster().getDataBuffer()).getData();
+
 		// Number of bytes / pixel
-		int pixbytes = (alpha ? 4 : 3);
+		int pixbytes = 4;
 		
-		// OpenGL stores 
+		// OpenGL stores the bytes in reverse order
+		byte[] temp = new byte[4];
 		for (int i = 0; i < source.length; i += pixbytes) {
-			byte temp = source[i];
-			source[i] = source[i + 2];
-			source[i + 2] = temp;
+			temp[0] = source[i + 0];
+			temp[1] = source[i + 1];
+			temp[2] = source[i + 2];
+			temp[3] = source[i + 3];
+			
+			source[i + 0] = temp[3];
+			source[i + 1] = temp[2];
+			source[i + 2] = temp[1];
+			source[i + 3] = temp[0];
 		}
 		
 		// Find the resolution it needs to use in opengl.
@@ -97,7 +98,7 @@ public class TextureLoader {
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, glwidth, glheight,
-						  0, alpha ? GL11.GL_RGBA : GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, pixels);
+						  0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
 		
 		float wratio = img.getWidth() / (float)glwidth;
 		float hratio = img.getHeight() / (float)glheight;
@@ -113,5 +114,15 @@ public class TextureLoader {
 		int i = 2;
 		while (x > i) i *= 2;
 		return i;
+	}
+	
+	private static BufferedImage convertToABGR(BufferedImage bi) {
+		int w = bi.getWidth();
+		int h = bi.getHeight();
+		BufferedImage newimg = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
+		int[] rgbarray = new int[w * h];
+		bi.getRGB(0, 0, w, h, rgbarray, 0, w);
+		newimg.setRGB(0, 0, w, h, rgbarray, 0, w);
+		return newimg;
 	}
 }

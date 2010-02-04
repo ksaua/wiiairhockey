@@ -16,6 +16,11 @@ import org.lwjgl.opengl.GL11;
 public class TextureLoader {
 	private static HashMap<String, Texture> cache = new HashMap<String, Texture>();
 	
+	/**
+	 * Load a texture in the data/textures folder.
+	 * @param name Filename
+	 * @return OpenGL bindable texture
+	 */
 	public static Texture loadTexture(String name) {
 		
 		if (!cache.containsKey(name)) {
@@ -45,8 +50,10 @@ public class TextureLoader {
 		else 
 			source = ((DataBufferByte)img.getRaster().getDataBuffer()).getData();
 		
+		// Number of bytes / pixel
 		int pixbytes = (alpha ? 4 : 3);
 		
+		// OpenGL stores 
 		for (int i = 0; i < source.length; i += pixbytes) {
 			byte temp = source[i];
 			source[i] = source[i + 2];
@@ -83,6 +90,11 @@ public class TextureLoader {
 		return new Texture(textures.get(0), img.getHeight(), img.getWidth(), wratio, hratio);
 	}
 	
+	/**
+	 * Given a number x, finds the next power of 2.
+	 * @param x
+	 * @return
+	 */
 	private static int nextPow2(int x) {
 		int i = 2;
 		while (x > i) i *= 2;

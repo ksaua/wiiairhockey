@@ -7,6 +7,7 @@ import motej.Mote;
 import motej.MoteFinderListener;
 import motej.request.ReportModeRequest;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -41,8 +42,8 @@ public class Menu implements State {
 			System.out.println(ev.wii_button);
 		}
 		
-		if (ev.type == Event.Type.key_pressed) {
-			System.out.println("Pressed key: " + ev.key_char);
+		if (ev.type == Event.Type.key_released && ev.lwjgl_id == Keyboard.KEY_G) {
+			e.setState("ingame");
 		}
 	}
 

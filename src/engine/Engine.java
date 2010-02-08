@@ -148,6 +148,10 @@ public class Engine implements EventListener {
 		states.put(id, state);
 	}
 
+	public void setState(String id) {
+		currentState = id;
+	}
+	
 	@Override
 	public void event(Event e) {
 		synchronized (events) {

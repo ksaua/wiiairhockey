@@ -3,6 +3,7 @@ package airhockey;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.glu.GLU;
 
 import engine.Camera;
@@ -35,6 +36,9 @@ public class Ingame implements State {
 
 	@Override
 	public void event(Engine e, GraphicContext gc, Event ev) {
+		if (ev.type == Event.Type.key_released && ev.lwjgl_id == Keyboard.KEY_ESCAPE) {
+			e.setState("menu");
+		}
 	}
 
 	@Override

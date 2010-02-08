@@ -16,7 +16,7 @@ import engine.collisionsystem.CollisionChecker;
 import engine.collisionsystem.CollisionHandler;
 import engine.events.Event;
 
-public class Test implements State, CollisionHandler {
+public class Test implements State {
 
 	public static class Square implements Renderable {
 
@@ -67,7 +67,6 @@ public class Test implements State, CollisionHandler {
 
 	Entity s, s2;
 	Camera cam;
-	CollisionChecker cc;
 	TrueTypeFont ttf;
 
 	@Override
@@ -83,10 +82,6 @@ public class Test implements State, CollisionHandler {
 		s2 = new Entity(-1.5f,0,0);
 		s2.setRenderComponent(square);
 
-		cc = new CollisionChecker();
-		cc.addCollideableEntity(s);
-		cc.addCollideableEntity(s2);
-		cc.addCollisionHandler(this);
 
 		cam = new Camera(0, 0f, 6f);
 		Font font = new Font("Courier New", Font.BOLD, 32);
@@ -123,15 +118,10 @@ public class Test implements State, CollisionHandler {
 		final float pi = (float) Math.PI;
 		s.increaseRotation(pi * dt, 0, 0);
 		s2.increaseRotation(0, pi * dt, pi * dt);
-		cc.checkForCollision();
 		
 //		System.out.println(dt);
 	}
 
-	@Override
-	public void collisionOccured(Entity obj1, Entity obj2) {
-					
-	}
 
 	public static void main(String[] args) {
 		Engine e = new Engine("Test spill");

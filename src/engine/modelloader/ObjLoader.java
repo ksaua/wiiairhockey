@@ -75,8 +75,7 @@ public class ObjLoader {
 				// Material file
 				if (parameters[0].equals("mtllib")) {
 					String f = file.getParent() + File.separator + parameters[1];
-					Material m = loadMaterial(new File(f));
-					obj.materials.put(m.name, m);
+					loadMaterials(obj, new File(f));
 				}
 				
 				else if (parameters[0].equals("usemtl")) {
@@ -140,15 +139,17 @@ public class ObjLoader {
 	
 	/**
 	 * Reads a .mtl file
+	 * @param obj 
 	 * @param file
 	 * @return
 	 */
-	private static Material loadMaterial(File file) {
-		Material m = new Material();
+	private static void loadMaterials(ObjModel obj, File file) {
 
 		try {
 
 			BufferedReader br = new BufferedReader(new FileReader(file));
+
+			Material m = null;
 
 			String line = br.readLine();
 
@@ -158,6 +159,9 @@ public class ObjLoader {
 
 				// Name
 				if (parameters[0].equals("newmtl")) {
+					if (m != null) 	obj.materials.put(m.name, m);
+					
+					m = new Material();
 					m.name = parameters[1];
 				} 
 
@@ -173,7 +177,7 @@ public class ObjLoader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return m;
+		
 	}
 
 	/**
@@ -193,7 +197,8 @@ public class ObjLoader {
 			
 			if (face.material != lastMat) {
 				lastMat = face.material;
-			    face.material.texture.bind();
+				if (face.material.texture != null) 
+					face.material.texture.bind();
 			}
 
 			if (face.vertices.length == 3)

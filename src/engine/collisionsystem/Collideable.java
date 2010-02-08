@@ -1,9 +1,9 @@
 package engine.collisionsystem;
 
-import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector2f;
 
 public interface Collideable {
 	public CollisionBounds getCollisionBounds();
-	public Vector3f getPos();
-	public Vector3f getRot();
+	public Vector2f getPos();
+	public float getRot();
 }

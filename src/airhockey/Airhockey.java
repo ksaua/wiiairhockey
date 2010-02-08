@@ -28,8 +28,8 @@ public class Airhockey extends Engine {
 	public static void main(String[] args) {
 		Airhockey ah = new Airhockey("Airhockey");
 //		ah.setUpDisplay(800, 600);
-		ah.addState("menu", new Menu());
 		ah.addState("ingame", new Ingame());
+		ah.addState("menu", new Menu());
 		ah.addState("options", new Options());
 		ah.init();
 		ah.loop();

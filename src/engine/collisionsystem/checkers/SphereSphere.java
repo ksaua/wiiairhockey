@@ -1,8 +1,8 @@
 package engine.collisionsystem.checkers;
 
-import engine.Entity;
 import engine.collisionsystem.BoundingSphere;
 import engine.collisionsystem.CollisionBounds;
+import engine.collisionsystem.CollideableEntity;
 
 public class SphereSphere implements Checker {
 
@@ -17,8 +17,8 @@ public class SphereSphere implements Checker {
 	}
 	
 	@Override
-	public boolean collides(Entity a, Entity b) {
-		return false;
+	public boolean collides(CollideableEntity a, CollideableEntity b) {
+		return false; 
 	}
 
 

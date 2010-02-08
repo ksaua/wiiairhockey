@@ -4,26 +4,34 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import engine.Entity;
+import engine.collisionsystem.checkers.BoxBox;
 import engine.collisionsystem.checkers.Checker;
 import engine.collisionsystem.checkers.SphereSphere;
 
+/**
+ * Groups a bunch of CollideableEntities.
+ * It notifies CollisionHandlers if any of them
+ * are colliding.
+ * @author Knut Saua Mathiesen
+ *
+ */
 public class CollisionChecker {
-	public ArrayList<Entity> collideableEntities;
+	public ArrayList<CollideableEntity> collideableEntities;
 	public LinkedList<CollisionHandler> collisionHandler;
 	
 	private ArrayList<Checker> checkers = new ArrayList<Checker>() {{
-//		add(new SphereSphere());
+		add(new BoxBox());
 	}};
 
 
 	
 	public CollisionChecker() {
-		collideableEntities = new ArrayList<Entity>();
+		collideableEntities = new ArrayList<CollideableEntity>();
 		collisionHandler = new LinkedList<CollisionHandler>();
 
 	}
 	
-	public void addCollideableEntity(Entity e) {
+	public void addCollideableEntity(CollideableEntity e) {
 		collideableEntities.add(e);
 	}
 	
@@ -49,8 +57,15 @@ public class CollisionChecker {
 	}
 	
 
+	/**
+	 * Finds the correct checking algorithm,
+	 * if it finds any returns whatever that returned.
+	 * @param a
+	 * @param b
+	 * @return True of false depending on if a and b collided
+	 */
 
-	private boolean collides(Entity a, Entity b) {
+	private boolean collides(CollideableEntity a, CollideableEntity b) {
 		CollisionBounds cb1 = a.getCollisionBounds();
 		CollisionBounds cb2 = b.getCollisionBounds();
 		
@@ -58,13 +73,12 @@ public class CollisionChecker {
 			if (checker.getAcceptedClass1() == cb1.getClass() && 
 				checker.getAcceptedClass2() == cb2.getClass()) 
 				return checker.collides(a, b);
+			
 			else if (checker.getAcceptedClass1() == cb1.getClass() && 
 					 checker.getAcceptedClass2() == cb2.getClass())
 				return checker.collides(b, a);
-
 				
 		}
-		
 
 		return false;
 	}

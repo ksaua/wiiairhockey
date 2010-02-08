@@ -3,5 +3,5 @@ package engine.collisionsystem;
 import engine.Entity;
 
 public interface CollisionHandler {
-	public void collisionOccured(Entity obj1, Entity obj2);
+	public void collisionOccured(CollideableEntity obj1, CollideableEntity obj2);
 }

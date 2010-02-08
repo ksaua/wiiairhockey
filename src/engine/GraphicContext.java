@@ -18,7 +18,7 @@ public class GraphicContext {
 	public void start3dDrawing() {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-		GLU.gluPerspective(45f, Display.getDisplayMode().getWidth() / (float)Display.getDisplayMode().getHeight(), 0.1f, 100f);
+		GLU.gluPerspective(60f, Display.getDisplayMode().getWidth() / (float)Display.getDisplayMode().getHeight(), 0.1f, 100f);
 		
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();

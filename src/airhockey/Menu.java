@@ -4,13 +4,13 @@ package airhockey;
 import java.awt.Font;
 
 import motej.Mote;
+import motej.MoteFinderListener;
 import motej.request.ReportModeRequest;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import engine.Engine;
-import engine.Event;
 import engine.GraphicContext;
 import engine.Sprite;
 import engine.State;
@@ -18,6 +18,7 @@ import engine.TextureLoader;
 import engine.TrueTypeFont;
 import engine.Wii.SimpleMoteFinder;
 import engine.Wii.WiiEventCreator;
+import engine.events.Event;
 
 
 public class Menu implements State {
@@ -26,9 +27,6 @@ public class Menu implements State {
 	Sprite mouse;
 	
 	TrueTypeFont ttf;
-	
-	Mote mote;
-	
 	
 	@Override
 	public void event(Engine e, GraphicContext gc, Event ev) {
@@ -42,6 +40,10 @@ public class Menu implements State {
 		} else if (ev.type == Event.Type.wii_button_pressed) {
 			System.out.println(ev.wii_button);
 		}
+		
+		if (ev.type == Event.Type.key_pressed) {
+			System.out.println("Pressed key: " + ev.key_char);
+		}
 	}
 
 	@Override
@@ -54,21 +56,16 @@ public class Menu implements State {
 		background = new Sprite(TextureLoader.loadTexture("menubg.jpg"));
 		mouse = new Sprite(TextureLoader.loadTexture("mouse-red.png"));
 		
+		final Airhockey ah = (Airhockey) e;
+		SimpleMoteFinder smf = new SimpleMoteFinder();
+		smf.findMote(new MoteFinderListener() {
+			@Override
+			public void moteFound(Mote mote) {
+				ah.initializeMote(mote);
+				ah.setMote(0, mote);
+			}
+		}, 30);
 		
-		try {
-			SimpleMoteFinder smf = new SimpleMoteFinder();
-			mote = smf.findMote();
-			mote.setReportMode(ReportModeRequest.DATA_REPORT_0x31);
-
-			WiiEventCreator wec = new WiiEventCreator();
-			wec.addListener(e);
-			
-			mote.addAccelerometerListener(wec);
-			mote.addCoreButtonListener(wec);
-			
-		} catch (Exception ex) {
-			System.out.println("hei");
-		}
 
 	}
 

@@ -8,12 +8,12 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import engine.Engine;
-import engine.Event;
 import engine.GraphicContext;
 import engine.Renderable;
 import engine.State;
 import engine.Texture;
 import engine.TextureLoader;
+import engine.events.Event;
 
 public class TextureTest implements State {
 

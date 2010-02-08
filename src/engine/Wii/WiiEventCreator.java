@@ -2,8 +2,8 @@ package engine.Wii;
 
 import java.util.LinkedList;
 
-import engine.Event;
-import engine.EventListener;
+import engine.events.Event;
+import engine.events.EventListener;
 
 import motej.Mote;
 import motej.event.AccelerometerEvent;

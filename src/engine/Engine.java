@@ -10,7 +10,10 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Timer;
 
-import engine.Wii.WiiEventCreator;
+import engine.events.Event;
+import engine.events.EventListener;
+import engine.events.KeyboardEventCreator;
+import engine.events.MouseEventCreator;
 
 public class Engine implements EventListener {
 	private HashMap<String, State> states;
@@ -18,12 +21,22 @@ public class Engine implements EventListener {
 	private boolean running;
 	private LinkedList<Event> events;
 	private String title;
+	
+	// Theese will poll the input and create events based on the polling
+	private KeyboardEventCreator kec = new KeyboardEventCreator();
+	private MouseEventCreator mec = new MouseEventCreator();
 
 	public Engine(String title) {
 		this.title = title;
 		states = new HashMap<String, State>();
 		events = new LinkedList<Event>();
 		running = true;
+		
+	
+		kec = new KeyboardEventCreator();
+		mec = new MouseEventCreator();
+		kec.addEventListener(this);
+		mec.addEventListener(this);
 	}
 
 	public void setUpDisplay(int width, int height) {
@@ -89,12 +102,20 @@ public class Engine implements EventListener {
 		
 
 		while (running && !Display.isCloseRequested()) {
+			
+			// Calculate time
 			Timer.tick();
 			float dt = timer.getTime() - lasttime;
 			lasttime = timer.getTime();
 
+			// Get current state
 			State current = states.get(currentState);
 
+			// Poll for events
+			kec.poll();
+			mec.poll();
+			
+			// Send out events to state
 			synchronized (events) {
 				for (Event e: events) {
 					current.event(this, gc, e);
@@ -102,9 +123,10 @@ public class Engine implements EventListener {
 				events.clear();	
 			}
 
+			
 			current.update(this, gc, dt);
 			
-			
+			// Start drawing 
 			gc.start3dDrawing();
 		    GL11.glLoadIdentity();
 			current.render(this, gc);

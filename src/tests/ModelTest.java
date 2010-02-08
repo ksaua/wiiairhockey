@@ -6,10 +6,10 @@ import java.io.FileNotFoundException;
 import engine.Camera;
 import engine.Engine;
 import engine.Entity;
-import engine.Event;
 import engine.GraphicContext;
 import engine.Model;
 import engine.State;
+import engine.events.Event;
 import engine.modelloader.ObjLoader;
 
 public class ModelTest implements State {

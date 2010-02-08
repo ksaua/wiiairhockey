@@ -1,9 +1,9 @@
 package airhockey;
 
 import engine.Engine;
-import engine.Event;
 import engine.GraphicContext;
 import engine.State;
+import engine.events.Event;
 
 public class Options implements State {
 

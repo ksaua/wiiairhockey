@@ -8,13 +8,13 @@ import org.lwjgl.opengl.GL11;
 import engine.Camera;
 import engine.Engine;
 import engine.Entity;
-import engine.Event;
 import engine.GraphicContext;
 import engine.Renderable;
 import engine.State;
 import engine.TrueTypeFont;
 import engine.collisionsystem.CollisionChecker;
 import engine.collisionsystem.CollisionHandler;
+import engine.events.Event;
 
 public class Test implements State, CollisionHandler {
 

@@ -1,5 +1,7 @@
 package engine;
 
+import engine.events.Event;
+
 public interface State {
 	public void init(Engine e, GraphicContext gc);
 	public void event(Engine e, GraphicContext gc, Event ev);

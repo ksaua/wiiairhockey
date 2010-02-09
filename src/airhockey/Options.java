@@ -31,4 +31,16 @@ public class Options implements State {
 		
 	}
 
+	@Override
+	public void onEnter(Engine e, GraphicContext gc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onExit(Engine e, GraphicContext gc) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

@@ -14,6 +14,7 @@ public class Sprite {
 		GL11.glPushMatrix();
 		GL11.glTranslatef(x, y, 0);
 		
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		tex.bind();
 		
 		float h = tex.getImageHeight() / 2;
@@ -25,7 +26,11 @@ public class Sprite {
 	    GL11.glTexCoord2d(tex.widthRatio(),tex.heightRatio()); 	GL11.glVertex2d( w, h);
 	    GL11.glTexCoord2d(0.0,tex.heightRatio());				GL11.glVertex2d(-w, h);
 	    GL11.glEnd();
+	    
+	    GL11.glDisable(GL11.GL_TEXTURE_2D);
+	    
 	    GL11.glPopMatrix();
+	    
 	}
 
 }

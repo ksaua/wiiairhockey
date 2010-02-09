@@ -6,10 +6,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.Color;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -33,6 +37,13 @@ public class ObjLoader {
 	private static class Material {
 		String name;
 		Texture texture;
+		float ns;
+		float[] ka;
+		float[] kd;
+		float[] ks;
+		float ni;
+		float d;
+		int illum;
 	}
 
 	private static class Face {
@@ -168,11 +179,40 @@ public class ObjLoader {
 				// Texture
 				else if (parameters[0].equals("map_Kd")) {
 					m.texture = TextureLoader.loadTexture(parameters[1]);
-
 				}
+				
+				// Shininess?
+				else if (parameters[0].equals("Ns")) {
+					m.ns = Float.parseFloat(parameters[1]);
+				}
+				
+				// Ambient light reflection?
+				else if (parameters[0].equals("Ka")) {
+					m.ka = new float[] {Float.parseFloat(parameters[1]), 
+							Float.parseFloat(parameters[2]),
+							Float.parseFloat(parameters[3]), 1f};
+				}
+				
+				// Diffuse light reflection?
+				else if (parameters[0].equals("Kd")) {
+					m.kd = new float[] {Float.parseFloat(parameters[1]), 
+							Float.parseFloat(parameters[2]),
+							Float.parseFloat(parameters[3]), 1f};
+				}
+				
+				// Specular light reflection?
+				else if (parameters[0].equals("Kd")) {
+					m.ks = new float[] {Float.parseFloat(parameters[1]), 
+							Float.parseFloat(parameters[2]),
+							Float.parseFloat(parameters[3]), 1f};
+				}
+
 
 				line = br.readLine();
 			}
+			
+			// Add the last
+			if (m != null) obj.materials.put(m.name, m);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -189,18 +229,27 @@ public class ObjLoader {
 
 		int id = GL11.glGenLists(1);
 
-		GL11.glNewList(id, GL11.GL_COMPILE);
-
-		Material lastMat = null;
+		GL11.glNewList(id, GL11.GL_COMPILE);		
 		
 		for (Face face: obj.faces) {
-			
-			if (face.material != lastMat) {
-				lastMat = face.material;
-				if (face.material.texture != null) 
+			if (face.material != null) {
+				
+				if (face.material.ka != null)
+					GL11.glMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT, FloatBuffer.wrap(face.material.ka));
+				
+				if (face.material.kd != null)
+					GL11.glMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_DIFFUSE, FloatBuffer.wrap(face.material.kd));
+				
+				if (face.material.ks != null)
+					GL11.glMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_SPECULAR, FloatBuffer.wrap(face.material.ks));
+				
+				if (face.material.texture != null) {
+					GL11.glEnable( GL11.GL_TEXTURE_2D );
 					face.material.texture.bind();
-			}
-
+				}
+				
+			} 
+			
 			if (face.vertices.length == 3)
 				GL11.glBegin(GL11.GL_TRIANGLES);
 			else 
@@ -216,11 +265,13 @@ public class ObjLoader {
 			}
 
 			GL11.glEnd();
+			
+			GL11.glDisable( GL11.GL_TEXTURE_2D );
 
 		}
 
 		GL11.glEndList();
-
+		
 		return id;
 	}
 }

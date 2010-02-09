@@ -296,6 +296,8 @@ public class TrueTypeFont {
 			int format
 			) {
 		
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		
 		IntObject intObject = null;
 		int charCurrent;
 		

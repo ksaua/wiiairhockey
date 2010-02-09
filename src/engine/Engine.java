@@ -77,16 +77,14 @@ public class Engine implements EventListener {
 
 		GL11.glShadeModel(GL11.GL_SMOOTH);
 		
-		GL11.glClearColor(0,0,0,0);
+		GL11.glClearColor(0,0.5f,0,0);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		
-//		GL11.glClearDepth(1.0f);
+		GL11.glClearDepth(1.0f);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glDepthFunc(GL11.GL_LEQUAL);
 		GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
-
-
 
 
 		for (State state: states.values()) {
@@ -126,6 +124,9 @@ public class Engine implements EventListener {
 			
 			current.update(this, gc, dt);
 			
+			// Reset color
+			GL11.glColor3f(1, 1, 1);
+			
 			// Start drawing 
 			gc.start3dDrawing();
 		    GL11.glLoadIdentity();
@@ -149,7 +150,9 @@ public class Engine implements EventListener {
 	}
 
 	public void setState(String id) {
+		states.get(currentState).onExit(this, gc);
 		currentState = id;
+		states.get(id).onEnter(this, gc);
 	}
 	
 	@Override

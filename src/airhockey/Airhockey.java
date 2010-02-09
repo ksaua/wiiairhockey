@@ -1,6 +1,8 @@
 package airhockey;
 
 
+import org.lwjgl.opengl.GL11;
+
 import motej.Mote;
 import motej.request.ReportModeRequest;
 import engine.Engine;
@@ -31,7 +33,7 @@ public class Airhockey extends Engine {
 		ah.addState("ingame", new Ingame());
 		ah.addState("menu", new Menu());
 		ah.addState("options", new Options());
-		ah.init();
+		ah.init();		
 		ah.loop();
 	}
 }

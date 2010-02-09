@@ -53,8 +53,13 @@ public class Light extends Entity {
 		return state;
 	}
 	
-	private FloatBuffer floatbuffer(float a, float b, float c, float d) {
+	private static FloatBuffer floatbuffer(float a, float b, float c, float d) {
 		float[] t = {a, b, c, d};
 		return FloatBuffer.wrap(t);
+	}
+	
+	
+	public static void setGlobalAmbient(float r, float g, float b, float a) {
+		GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, floatbuffer(r, g, b, a));
 	}
 }

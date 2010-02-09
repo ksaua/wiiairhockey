@@ -17,6 +17,9 @@ public class Event {
 	public int lwjgl_id;
 	public char key_char;
 	
+	public int dx;
+	public int dy;
+	
 	public Event(Type type) {
 		this.type = type;
 	}

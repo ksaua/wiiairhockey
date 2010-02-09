@@ -48,9 +48,7 @@ public class Menu implements State {
 	}
 
 	@Override
-	public void init(Engine e, GraphicContext gc) {
-		GL11.glEnable( GL11.GL_TEXTURE_2D );
-		
+	public void init(Engine e, GraphicContext gc) {		
 		Font font = new Font("Courier New", Font.BOLD, 32);
 		ttf = new TrueTypeFont(font, true);
 		
@@ -72,10 +70,11 @@ public class Menu implements State {
 
 	@Override
 	public void render(Engine e, GraphicContext gc) {
-		gc.start2dDrawing();		
 		
+		gc.start2dDrawing();		
 		GL11.glTranslatef(400, 300, 0);
 		background.draw(0,0);
+		
 		
 		ttf.drawString(0, 200, "Wii Airhockey", 1, 1, TrueTypeFont.ALIGN_CENTER);
 		
@@ -86,5 +85,17 @@ public class Menu implements State {
 
 	@Override
 	public void update(Engine e, GraphicContext gc, float dt) {}
+
+	@Override
+	public void onEnter(Engine e, GraphicContext gc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onExit(Engine e, GraphicContext gc) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

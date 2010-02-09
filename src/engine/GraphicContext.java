@@ -14,6 +14,7 @@ public class GraphicContext {
 		GL11.glLoadIdentity();
 		GL11.glViewport(0, 0, Display.getDisplayMode().getWidth(), Display.getDisplayMode().getHeight());
 
+		GL11.glDisable(GL11.GL_LIGHTING);
 	}
 	public void start3dDrawing() {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -22,5 +23,14 @@ public class GraphicContext {
 		
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();
+		
+		GL11.glEnable(GL11.GL_LIGHTING);
+	}
+		
+	public int getScreenWidth() {
+		return Display.getDisplayMode().getWidth();
+	}
+	public int getScreenHeight() {
+		return Display.getDisplayMode().getHeight();
 	}
 }

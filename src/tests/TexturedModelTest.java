@@ -60,4 +60,16 @@ public class TexturedModelTest implements State {
 		e.init();
 		e.loop();
 	}
+
+	@Override
+	public void onEnter(Engine e, GraphicContext gc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onExit(Engine e, GraphicContext gc) {
+		// TODO Auto-generated method stub
+		
+	}
 }

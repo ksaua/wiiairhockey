@@ -6,24 +6,18 @@ import java.io.FileNotFoundException;
 import org.lwjgl.opengl.GL11;
 
 import engine.Camera;
+import engine.EmptyState;
 import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.Model;
-import engine.State;
-import engine.events.Event;
 import engine.modelloader.ObjLoader;
 
-public class TexturedModelTest implements State {
+public class TexturedModelTest extends EmptyState {
 
 	Model testmodel;
 	Entity test;
 	Camera cam;
-	
-	@Override
-	public void event(Engine e, GraphicContext gc, Event ev) {
-
-	}
 
 	@Override
 	public void init(Engine e, GraphicContext gc) {
@@ -59,17 +53,5 @@ public class TexturedModelTest implements State {
 		e.addState("Meh", new TexturedModelTest() );
 		e.init();
 		e.loop();
-	}
-
-	@Override
-	public void onEnter(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onExit(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
 	}
 }

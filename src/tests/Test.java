@@ -6,17 +6,14 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import engine.Camera;
+import engine.EmptyState;
 import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.Renderable;
-import engine.State;
 import engine.TrueTypeFont;
-import engine.collisionsystem.CollisionChecker;
-import engine.collisionsystem.CollisionHandler;
-import engine.events.Event;
 
-public class Test implements State {
+public class Test extends EmptyState {
 
 	public static class Square implements Renderable {
 
@@ -68,11 +65,6 @@ public class Test implements State {
 	Entity s, s2;
 	Camera cam;
 	TrueTypeFont ttf;
-
-	@Override
-	public void event(Engine e, GraphicContext gc, Event ev) {
-
-	}
 
 	@Override
 	public void init(Engine e, GraphicContext gc) {
@@ -128,17 +120,5 @@ public class Test implements State {
 		e.addState("Meh", new Test() );
 		e.init();
 		e.loop();
-	}
-
-	@Override
-	public void onEnter(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onExit(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
 	}
 }

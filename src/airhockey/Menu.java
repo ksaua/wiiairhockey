@@ -5,24 +5,22 @@ import java.awt.Font;
 
 import motej.Mote;
 import motej.MoteFinderListener;
-import motej.request.ReportModeRequest;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
+import engine.EmptyState;
 import engine.Engine;
 import engine.GraphicContext;
 import engine.Sprite;
-import engine.State;
 import engine.TextureLoader;
 import engine.TrueTypeFont;
 import engine.Wii.SimpleMoteFinder;
-import engine.Wii.WiiEventCreator;
 import engine.events.Event;
 
 
-public class Menu implements State {
+public class Menu extends EmptyState {
 
 	Sprite background;
 	Sprite mouse;
@@ -82,20 +80,4 @@ public class Menu implements State {
 		
 		mouse.draw(Mouse.getX(), Mouse.getY());
 	}
-
-	@Override
-	public void update(Engine e, GraphicContext gc, float dt) {}
-
-	@Override
-	public void onEnter(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onExit(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

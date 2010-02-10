@@ -1,21 +1,16 @@
 package tests;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
+import engine.EmptyState;
 import engine.Engine;
 import engine.GraphicContext;
 import engine.Renderable;
-import engine.State;
 import engine.Texture;
 import engine.TextureLoader;
-import engine.events.Event;
 
-public class TextureTest implements State {
+public class TextureTest extends EmptyState {
 
 	public static class Square implements Renderable {
 
@@ -65,10 +60,6 @@ public class TextureTest implements State {
 	}
 
 	Texture tex;
-	@Override
-	public void event(Engine e, GraphicContext gc, Event ev) {
-
-	}
 
 	@Override
 	public void init(Engine e, GraphicContext gc) {
@@ -106,17 +97,5 @@ public class TextureTest implements State {
 		e.addState("Meh", new TextureTest() );
 		e.init();
 		e.loop();
-	}
-
-	@Override
-	public void onEnter(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onExit(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
 	}
 }

@@ -4,25 +4,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import engine.Camera;
+import engine.EmptyState;
 import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.Model;
-import engine.State;
-import engine.events.Event;
 import engine.modelloader.ObjLoader;
 
-public class ModelTest implements State {
+public class ModelTest extends EmptyState {
 
 	Model testmodel;
 	Entity test;
 	Camera cam;
-
-	@Override
-	public void event(Engine e, GraphicContext gc, Event ev) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void init(Engine e, GraphicContext gc) {
@@ -53,17 +46,5 @@ public class ModelTest implements State {
 		e.addState("Meh", new ModelTest() );
 		e.init();
 		e.loop();
-	}
-
-	@Override
-	public void onEnter(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onExit(Engine e, GraphicContext gc) {
-		// TODO Auto-generated method stub
-		
 	}
 }

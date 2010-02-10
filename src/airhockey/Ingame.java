@@ -8,6 +8,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
+import engine.EmptyState;
 import engine.Camera;
 import engine.Engine;
 import engine.Entity;
@@ -18,7 +19,7 @@ import engine.TrueTypeFont;
 import engine.events.Event;
 import engine.modelloader.ObjLoader;
 
-public class Ingame implements State {
+public class Ingame extends EmptyState {
 	
 	TrueTypeFont ttf;
 	
@@ -84,10 +85,4 @@ public class Ingame implements State {
 	public void onEnter(Engine e, GraphicContext gc) {
 		scores = new int[2];
 	}
-
-	@Override
-	public void onExit(Engine e, GraphicContext gc) {
-		
-	}
-
 }

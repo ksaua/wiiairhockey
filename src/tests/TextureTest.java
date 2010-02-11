@@ -65,7 +65,7 @@ public class TextureTest extends EmptyState {
 	public void init(Engine e, GraphicContext gc) {
 		GL11.glEnable( GL11.GL_TEXTURE_2D );
 
-		tex = TextureLoader.loadTexture("chesstex.jpg");
+		tex = TextureLoader.loadTexture("chesstex.jpg", false);
 	}
 
 	@Override

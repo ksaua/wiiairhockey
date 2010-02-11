@@ -1,8 +1,6 @@
 package airhockey;
 
 
-import org.lwjgl.opengl.GL11;
-
 import motej.Mote;
 import motej.request.ReportModeRequest;
 import engine.Engine;

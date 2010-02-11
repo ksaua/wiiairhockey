@@ -50,8 +50,8 @@ public class Menu extends EmptyState {
 		Font font = new Font("Courier New", Font.BOLD, 32);
 		ttf = new TrueTypeFont(font, true);
 		
-		background = new Sprite(TextureLoader.loadTexture("menubg.jpg"));
-		mouse = new Sprite(TextureLoader.loadTexture("mouse-red.png"));
+		background = new Sprite(TextureLoader.loadTexture("menubg.jpg", false));
+		mouse = new Sprite(TextureLoader.loadTexture("mouse-red.png", false));
 		
 		final Airhockey ah = (Airhockey) e;
 		SimpleMoteFinder smf = new SimpleMoteFinder();
@@ -70,11 +70,9 @@ public class Menu extends EmptyState {
 	public void render(Engine e, GraphicContext gc) {
 		
 		gc.start2dDrawing();		
-		GL11.glTranslatef(400, 300, 0);
-		background.draw(0,0);
+		background.draw(400,300);	
 		
-		
-		ttf.drawString(0, 200, "Wii Airhockey", 1, 1, TrueTypeFont.ALIGN_CENTER);
+		ttf.drawString(gc.getScreenWidth() / 2, gc.getScreenHeight() - 70, "Wii Airhockey", 1, 1, TrueTypeFont.ALIGN_CENTER);
 		
 		GL11.glLoadIdentity();
 		

@@ -178,7 +178,7 @@ public class ObjLoader {
 
 				// Texture
 				else if (parameters[0].equals("map_Kd")) {
-					m.texture = TextureLoader.loadTexture(parameters[1]);
+					m.texture = TextureLoader.loadTexture(parameters[1], true);
 				}
 				
 				// Shininess?

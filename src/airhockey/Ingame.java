@@ -6,15 +6,13 @@ import java.io.FileNotFoundException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
-import engine.EmptyState;
 import engine.Camera;
+import engine.EmptyState;
 import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.Light;
-import engine.State;
 import engine.TrueTypeFont;
 import engine.events.Event;
 import engine.modelloader.ObjLoader;

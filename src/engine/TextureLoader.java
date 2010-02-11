@@ -21,37 +21,39 @@ public class TextureLoader {
     /**
      * Load a texture in the data/textures folder.
      * @param name Filename
+     * @param mipmap Is this texture only supposed to be rendered as a 2D sprite? Then it shouldn't be mipmapped
      * @return OpenGL bindable texture
      */
-    public static Texture loadTexture(String name) {
-        return loadTexture(name, true);
+    public static Texture loadTexture(String name, boolean mipmap) {
+        return loadTexture(name, true, mipmap);
     }
 
     /**
      * Load a texture in the data/textures folder.
      * @param name Filename
      * @param flip Flip the texture upside down?
+     * @param mipmap Is this texture only supposed to be rendered as a 2D sprite? Then it shouldn't be mipmapped
      * @return OpenGL bindable texture
      */
-    public static Texture loadTexture(String name, boolean flip) {
+    public static Texture loadTexture(String name, boolean flip, boolean mipmap) {
 
         if (!cache.containsKey(name)) {
-            Texture t = loadTexture(new File("data/textures/" + name), flip);
+            Texture t = loadTexture(new File("data/textures/" + name), flip, mipmap);
             cache.put(name, t);
         }
 
         return cache.get(name);
     }
 
-    private static Texture loadTexture(File file, boolean flip) {
+    private static Texture loadTexture(File file, boolean flip, boolean mipmap) {
         try {
-            return loadTexture(ImageIO.read(file), flip);
+            return loadTexture(ImageIO.read(file), flip, mipmap);
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static Texture loadTexture(BufferedImage img, boolean flip) {
+    private static Texture loadTexture(BufferedImage img, boolean flip, boolean mipmap) {
         img = convertToABGR(img);
 
         byte[] source = ((DataBufferByte)img.getAlphaRaster().getDataBuffer()).getData();
@@ -99,17 +101,21 @@ public class TextureLoader {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textures.get(0));
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, glwidth, glheight,
                 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
-
-        // Mip mapping
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_NEAREST);
+                
+        if (!mipmap) {
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        } else { // Mip mapping
+            GLU.gluBuild2DMipmaps( GL11.GL_TEXTURE_2D, 3, glwidth, glheight, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_NEAREST);
+        }
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        GLU.gluBuild2DMipmaps( GL11.GL_TEXTURE_2D, 3, glwidth, glheight, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
         
         // Anisotropic filtering
         FloatBuffer maximumAnistropy = FloatBuffer.allocate(16);
         GL11.glGetFloat(0x84FF, maximumAnistropy);        
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, 0x84FE, maximumAnistropy.get(0));
         
+
 
         float wratio = img.getWidth() / (float)glwidth;
         float hratio = img.getHeight() / (float)glheight;

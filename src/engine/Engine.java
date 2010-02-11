@@ -11,13 +11,12 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Timer;
 
 import engine.events.Event;
-import engine.events.EventListener;
 import engine.events.KeyboardEventCreator;
 import engine.events.MouseEventCreator;
 
-public class Engine implements EventListener {
+public class Engine {
     private HashMap<String, State> states;
-    private String currentState;
+    private State currentState;
     private boolean running;
     private LinkedList<Event> events;
     private String title;
@@ -35,8 +34,6 @@ public class Engine implements EventListener {
 
         kec = new KeyboardEventCreator();
         mec = new MouseEventCreator();
-        kec.addEventListener(this);
-        mec.addEventListener(this);
     }
 
     public void setUpDisplay(int width, int height) {
@@ -106,23 +103,11 @@ public class Engine implements EventListener {
             float dt = timer.getTime() - lasttime;
             lasttime = timer.getTime();
 
-            // Get current state
-            State current = states.get(currentState);
-
             // Poll for events
             kec.poll();
             mec.poll();
 
-            // Send out events to state
-            synchronized (events) {
-                for (Event e: events) {
-                    current.event(this, gc, e);
-                }
-                events.clear();	
-            }
-
-
-            current.update(this, gc, dt);
+            currentState.update(this, gc, dt);
 
             // Reset color
             GL11.glColor3f(1, 1, 1);
@@ -130,7 +115,7 @@ public class Engine implements EventListener {
             // Start drawing 
             gc.start3dDrawing();
             GL11.glLoadIdentity();
-            current.render(this, gc);
+            currentState.render(this, gc);
 
 
             Display.update();
@@ -142,23 +127,31 @@ public class Engine implements EventListener {
         Display.destroy();
         System.exit(0);		
     }
-
-
+    
     public void addState(String id, State state) {
-        if (states.isEmpty()) currentState = id;
+        if (states.isEmpty()) {
+            state.onEnter(this, gc);
+            setUpListeners(null, state);
+            currentState = state;
+        }
         states.put(id, state);
     }
 
     public void setState(String id) {
-        states.get(currentState).onExit(this, gc);
-        currentState = id;
-        states.get(id).onEnter(this, gc);
+        State newState = states.get(id); 
+
+        currentState.onExit(this, gc);
+        newState.onEnter(this, gc);
+
+        setUpListeners(currentState, newState);
+        
+        currentState = newState;
     }
 
-    @Override
-    public void event(Event e) {
-        synchronized (events) {
-            events.add(e);
-        }
+    private void setUpListeners(State oldstate, State newstate) {
+        kec.removeKeyboardListener(oldstate);
+        mec.removeMouseListener(oldstate);
+        kec.addKeyboardListener(newstate);
+        mec.addMouseListener(newstate);
     }
 }

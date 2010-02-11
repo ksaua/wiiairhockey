@@ -1,8 +1,10 @@
 package engine;
 
 import engine.events.Event;
+import engine.events.KeyboardListener;
+import engine.events.MouseListener;
 
-public interface State {
+public interface State extends KeyboardListener, MouseListener {
 	public void init(Engine e, GraphicContext gc);
 	public void onEnter(Engine e, GraphicContext gc);
 	public void onExit(Engine e, GraphicContext gc);

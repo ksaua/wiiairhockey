@@ -22,4 +22,19 @@ public abstract class EmptyState implements State {
     @Override
     public void onExit(Engine e, GraphicContext gc) { }
 
+    
+    @Override
+    public void keyPushed(int lwjglId, char keyChar) { }
+
+    @Override
+    public void keyReleased(int lwjglId, char keyChar) { }
+
+    @Override
+    public void mouseButtonPressed(int x, int y, int button) { }
+
+    @Override
+    public void mouseButtonReleased(int x, int y, int button) { }
+
+    @Override
+    public void mouseMoved(int dx, int dy) { }
 }

@@ -12,7 +12,7 @@ public class SubscribeableChanges {
 	
 	public void pushChange(int id) {
 		for (ChangeListener cl: getListenerList(id)) {
-			cl.change(id);
+			cl.change(this, id);
 		}
 	}
 	

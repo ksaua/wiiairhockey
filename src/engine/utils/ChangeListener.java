@@ -1,5 +1,5 @@
 package engine.utils;
 
 public interface ChangeListener {
-	public void change(int id);
+	public void change(SubscribeableChanges source, int id);
 }

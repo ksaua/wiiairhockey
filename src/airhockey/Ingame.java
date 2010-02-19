@@ -1,8 +1,7 @@
 package airhockey;
 
 import java.awt.Font;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.util.LinkedList;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -13,22 +12,25 @@ import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.Light;
+import engine.Renderable;
 import engine.TrueTypeFont;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.CollisionHandler;
 import engine.collisionsystem2D.Collisionsystem;
-import engine.modelloader.ObjLoader;
 
 public class Ingame extends EmptyState implements CollisionHandler {
 
     Engine engine;
-    
+
     Collisionsystem cs;
 
     TrueTypeFont ttf;
 
+    LinkedList<Controller> controllers = new LinkedList<Controller>();
+    
     Entity table;
-    Entity paddle;
+    Entity[] paddles = new Entity[2];
+    
     Entity puck;
     Camera cam;
 
@@ -37,10 +39,10 @@ public class Ingame extends EmptyState implements CollisionHandler {
     @Override
     public void init(Engine e, GraphicContext gc) {
         this.engine = e;
-        
+
         cs = new Collisionsystem();
         cs.addCollisionHandler(this);
-        
+
         cam = new Camera(-40f, 12f, 0);
         cam.lookAt(0, 0, 0);
         //		GL11.glEnable(GL11.GL_LIGHTING);
@@ -52,29 +54,34 @@ public class Ingame extends EmptyState implements CollisionHandler {
         light.setDiffuse(0.8f, 0.8f, 0.8f, 0);
 
         table = new Entity(0,0,0);
-        paddle = new Entity(-12, 1.5f, 0);
+        paddles[0] = new Entity(-12, 1.5f, 0);
+        paddles[1] = new Entity( 12, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
-        
-        cs.addEntity(paddle, new BoundingBox(paddle, 2, 10));
+
+        cs.addEntity(paddles[0], new BoundingBox(paddles[0], 2, 10));
+        cs.addEntity(paddles[1], new BoundingBox(paddles[1], 2, 10));
         cs.addEntity(puck, new BoundingBox(puck, 2, 2));
 
         Font font = new Font("Courier New", Font.BOLD, 32);
         ttf = new TrueTypeFont(font, true);
 
-        try {
-            table.setRenderComponent(ObjLoader.load(new File("data/models/table2.obj")));
-            paddle.setRenderComponent(ObjLoader.load(new File("data/models/paddle.obj")));
-            puck.setRenderComponent(ObjLoader.load(new File("data/models/puck.obj")));
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-        }
+        Renderable paddle = MediaLoader.loadObj("paddle.obj");
+        paddles[0].setRenderComponent(paddle);
+        paddles[1].setRenderComponent(paddle);
+        
+        controllers.add(new AIPaddleController(paddles[1], puck, -6, 6, -12, 0, 2));
+        
+        
+        table.setRenderComponent(MediaLoader.loadObj("table2.obj"));
+        puck.setRenderComponent(MediaLoader.loadObj("puck.obj"));
     }
 
     @Override
     public void render(Engine e, GraphicContext gc) {
         cam.transform();
         table.render();
-        paddle.render();
+        paddles[0].render();
+        paddles[1].render();
         puck.render();
 
         gc.start2dDrawing();
@@ -84,6 +91,9 @@ public class Ingame extends EmptyState implements CollisionHandler {
     @Override
     public void update(Engine e, GraphicContext gc, float dt) {
         cs.check();
+        
+        for (Controller c: controllers) c.update(dt);
+        
     }
 
     @Override
@@ -93,7 +103,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
 
     @Override
     public void mouseMoved(int dx, int dy) {
-        paddle.move(dy * 0.05f, 0, dx * 0.05f);
+        paddles[0].move(dy * 0.05f, 0, dx * 0.05f);
     }
 
     @Override

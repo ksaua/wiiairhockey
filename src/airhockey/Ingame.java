@@ -29,7 +29,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
     LinkedList<Controller> controllers = new LinkedList<Controller>();
     
     Entity table;
-    Entity[] paddles = new Entity[2];
+    Paddle[] paddles = new Paddle[2];
     
     Entity puck;
     Camera cam;
@@ -54,8 +54,8 @@ public class Ingame extends EmptyState implements CollisionHandler {
         light.setDiffuse(0.8f, 0.8f, 0.8f, 0);
 
         table = new Entity(0,0,0);
-        paddles[0] = new Entity(-12, 1.5f, 0);
-        paddles[1] = new Entity( 12, 1.5f, 0);
+        paddles[0] = new Paddle(-12, 1.5f, 0);
+        paddles[1] = new Paddle( 12, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
 
         cs.addEntity(paddles[0], new BoundingBox(paddles[0], 2, 10));

@@ -59,7 +59,6 @@ public class Engine {
         }
 
         try {
-            Display.setVSyncEnabled(true);
             Display.setDisplayMode(chosenMode);
             Display.setTitle(title);
             Display.create();
@@ -101,6 +100,7 @@ public class Engine {
             // Calculate time
             Timer.tick();
             float dt = timer.getTime() - lasttime;
+            System.out.println("DT: " + dt);
             lasttime = timer.getTime();
 
             // Poll for events
@@ -120,8 +120,6 @@ public class Engine {
 
             Display.update();
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-
-//            Display.sync(60);
         }
 
         Display.destroy();

@@ -3,20 +3,24 @@ package airhockey;
 import org.lwjgl.util.vector.Vector3f;
 
 import engine.Entity;
-import engine.utils.VelocityAverager;
+import engine.utils.VelocityGenerator;
 
 public class Paddle extends Entity {
 	
-	VelocityAverager average_velocity;
+	private VelocityGenerator velocity_generator;
 
 	public Paddle(float posx, float posy, float posz) {
 		super(posx, posy, posz, 0, 0, 0);
-		average_velocity = new VelocityAverager(0.5f);
+		velocity_generator = new VelocityGenerator(0.1f );
 	}
 	
 	@Override
 	public void move(float dx, float dy, float dz) {
 		super.move(dx, dy, dz);
-		average_velocity.add(new Vector3f(dx, dy, dz));
+		velocity_generator.push_move(new Vector3f(dx, dy, dz));
+	}
+	
+	public Vector3f getVelocity() {
+		return velocity_generator.getVelocity();
 	}
 }

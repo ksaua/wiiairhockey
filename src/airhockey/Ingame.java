@@ -4,7 +4,9 @@ import java.awt.Font;
 import java.util.LinkedList;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Vector3f;
 
 import engine.Camera;
 import engine.EmptyState;
@@ -36,6 +38,8 @@ public class Ingame extends EmptyState implements CollisionHandler {
 
     int[] scores = new int[2];
 
+	Vector3f puck_velocity = new Vector3f();
+
     @Override
     public void init(Engine e, GraphicContext gc) {
         this.engine = e;
@@ -54,9 +58,10 @@ public class Ingame extends EmptyState implements CollisionHandler {
         light.setDiffuse(0.8f, 0.8f, 0.8f, 0);
 
         table = new Entity(0,0,0);
-        paddles[0] = new Paddle(-12, 1.5f, 0);
-        paddles[1] = new Paddle( 12, 1.5f, 0);
+        paddles[0] = new Paddle(-20, 1.5f, 0);
+        paddles[1] = new Paddle( 20, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
+        puck_velocity = new Vector3f((float)(Math.random() - 0.5) * 20, 0f, 0f );
 
         cs.addEntity(paddles[0], new BoundingBox(paddles[0], 2, 10));
         cs.addEntity(paddles[1], new BoundingBox(paddles[1], 2, 10));
@@ -92,6 +97,9 @@ public class Ingame extends EmptyState implements CollisionHandler {
     public void update(Engine e, GraphicContext gc, float dt) {
         cs.check();
         
+        puck.move(puck_velocity.x * dt, puck_velocity.y * dt, puck_velocity.z * dt);
+//    	System.out.println("Pad: " + paddles[0].getVelocity());
+
         for (Controller c: controllers) c.update(dt);
         
     }
@@ -117,10 +125,42 @@ public class Ingame extends EmptyState implements CollisionHandler {
         if (lwjglId == Keyboard.KEY_ESCAPE) {
             engine.setState("menu");
         }
+        
+        // Reset mouse
+        if (lwjglId == Keyboard.KEY_SPACE) {
+            Mouse.setCursorPosition(400, 300);
+            paddles[0].setPosition(-12, 1.5f, 0);
+        }
     }
 
     @Override
     public void collisionOccured(Entity a, Entity b) {
-        System.out.println("COLLIDING");
+    	if (a instanceof Paddle) {
+    		paddlePuckCollision((Paddle) a, b);
+    	} else if (b instanceof Paddle) {
+    		paddlePuckCollision((Paddle) b, a);
+    	}
+    }
+    
+    public void paddlePuckCollision(Paddle paddle, Entity puck) {
+    	Vector3f paddle_velocity = paddle.getVelocity();
+    	Vector3f paddle_pos = paddle.getPos();
+    	
+    	boolean paddle_below_puck = paddle.getPos().x < puck.getPos().x;
+    	boolean puck_going_downwards = puck_velocity.x <= 0;
+
+    	System.out.println("puckcol " + paddle_below_puck + " .. " + puck_going_downwards);
+
+    	
+    	if (paddle_below_puck == puck_going_downwards) {
+        	Vector3f tmp_pvel = new Vector3f();
+        	tmp_pvel.x = -puck_velocity.x + paddle_velocity.x;
+//        	tmp_pvel.y = -puck_velocity.y + paddle_velocity.y;
+//        	tmp_pvel.z = -puck_velocity.z + paddle_velocity.z;
+        	System.out.println("vel: " + tmp_pvel);
+        	puck_velocity = tmp_pvel;
+        	puck.setPosition(paddle_pos.x + 1.5f * (puck_velocity.x > 0 ? 1 : -1), puck.getPos().y, puck.getPos().z);
+    	}
+
     }
 }

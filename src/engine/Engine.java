@@ -121,7 +121,7 @@ public class Engine {
             Display.update();
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
-            Display.sync(60);
+//            Display.sync(60);
         }
 
         Display.destroy();

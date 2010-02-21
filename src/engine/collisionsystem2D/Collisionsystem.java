@@ -18,12 +18,23 @@ public class Collisionsystem implements ChangeListener {
         Bounds bounds;
         boolean dirty; // Has been changed since last check? 
         
+        LinkedList<CollisionEntity> collidesWith;
+        
         public CollisionEntity(Entity e, Bounds b) {
-            entity = e; bounds = b;
+        	collidesWith = new LinkedList<CollisionEntity>();
+        	entity = e; bounds = b;
+        }
+        
+        public boolean didCollideWith(CollisionEntity ce) {
+        	return collidesWith.contains(ce);
+        }
+        
+        public void setCollision(CollisionEntity ce, boolean b) {
+        	if (b) collidesWith.add(ce);
+        	else collidesWith.remove(ce);
         }
     }
-    
-    
+        
     private HashMap<Entity, CollisionEntity> entities;
 
     private LinkedList<CollisionHandler> collisionHandlers;
@@ -66,10 +77,18 @@ public class Collisionsystem implements ChangeListener {
                 CollisionEntity e2 = ce[j];
                 
                 if (e1.dirty || e2.dirty) {
+                	
+//                	boolean didCollide = e1.didCollideWith(e2) || e2.didCollideWith(e1);
+                	
+//                    if (entitiesCollides(e1, e2) != didCollide) {
+//                    	e1.setCollision(e2, !didCollide);
+//                    	e2.setCollision(e1, !didCollide);
                     if (entitiesCollides(e1, e2)) {
-                        for (CollisionHandler ch: collisionHandlers) {
-                            ch.collisionOccured(e1.entity, e2.entity);
-                        }
+//                        if (!didCollide) {
+                        	for (CollisionHandler ch: collisionHandlers) {
+                        		ch.collisionOccured(e1.entity, e2.entity);
+                        	}
+//                        }
                     }
                 }
                 

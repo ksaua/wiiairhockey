@@ -47,9 +47,10 @@ public class Entity extends SubscribeableChanges implements Renderable {
 	 * @param dz
 	 */
 	public void move(float dx, float dy, float dz) {
-		pos.x += dx;
-		pos.y += dy;
-		pos.z += dz;
+	    pos = new Vector3f(pos.x + dx, pos.y + dy, pos.z + dz);
+//		pos.x += dx;
+//		pos.y += dy;
+//		pos.z += dz;
 		pushChange(POSITION_CHANGED);
 	}
 	

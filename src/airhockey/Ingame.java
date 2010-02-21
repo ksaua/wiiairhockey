@@ -29,16 +29,16 @@ public class Ingame extends EmptyState implements CollisionHandler {
     TrueTypeFont ttf;
 
     LinkedList<Controller> controllers = new LinkedList<Controller>();
-    
+
     Entity table;
     Paddle[] paddles = new Paddle[2];
-    
+
     Entity puck;
     Camera cam;
 
     int[] scores = new int[2];
 
-	Vector3f puck_velocity = new Vector3f();
+    Vector3f puck_velocity = new Vector3f();
 
     @Override
     public void init(Engine e, GraphicContext gc) {
@@ -61,7 +61,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
         paddles[0] = new Paddle(-20, 1.5f, 0);
         paddles[1] = new Paddle( 20, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
-        puck_velocity = new Vector3f((float)(Math.random() - 0.5) * 20, 0f, 0f );
+        //        puck_velocity = new Vector3f((float)(Math.random() - 0.5) * 20, 0f, 0f );
 
         cs.addEntity(paddles[0], new BoundingBox(paddles[0], 2, 10));
         cs.addEntity(paddles[1], new BoundingBox(paddles[1], 2, 10));
@@ -73,10 +73,10 @@ public class Ingame extends EmptyState implements CollisionHandler {
         Renderable paddle = MediaLoader.loadObj("paddle.obj");
         paddles[0].setRenderComponent(paddle);
         paddles[1].setRenderComponent(paddle);
-        
+
         controllers.add(new AIPaddleController(paddles[1], puck, -6, 6, -12, 0, 2));
-        
-        
+
+
         table.setRenderComponent(MediaLoader.loadObj("table2.obj"));
         puck.setRenderComponent(MediaLoader.loadObj("puck.obj"));
     }
@@ -91,17 +91,22 @@ public class Ingame extends EmptyState implements CollisionHandler {
 
         gc.start2dDrawing();
         ttf.drawString(gc.getScreenWidth() / 2, gc.getScreenHeight() - 40, String.valueOf(scores[0] + " - " + scores[1]), 1, 1, TrueTypeFont.ALIGN_CENTER);
+
+        //        ttf.drawString(20, gc.getScreenHeight() - 60, String.valueOf(puck_velocity.x), 1, 1, TrueTypeFont.ALIGN_LEFT);
+        ttf.drawString(20, gc.getScreenHeight() - 60, String.valueOf(paddles[0].getVelocity().x), 1, 1, TrueTypeFont.ALIGN_LEFT);
     }
 
     @Override
     public void update(Engine e, GraphicContext gc, float dt) {
         cs.check();
-        
+
+        // Friction
+        puck_velocity.scale(1 - (0.4f * dt));
+
         puck.move(puck_velocity.x * dt, puck_velocity.y * dt, puck_velocity.z * dt);
-//    	System.out.println("Pad: " + paddles[0].getVelocity());
 
         for (Controller c: controllers) c.update(dt);
-        
+
     }
 
     @Override
@@ -125,42 +130,59 @@ public class Ingame extends EmptyState implements CollisionHandler {
         if (lwjglId == Keyboard.KEY_ESCAPE) {
             engine.setState("menu");
         }
-        
+
         // Reset mouse
         if (lwjglId == Keyboard.KEY_SPACE) {
             Mouse.setCursorPosition(400, 300);
-            paddles[0].setPosition(-12, 1.5f, 0);
+            paddles[0].setPosition(-15, 1.5f, 0);
         }
     }
 
     @Override
     public void collisionOccured(Entity a, Entity b) {
-    	if (a instanceof Paddle) {
-    		paddlePuckCollision((Paddle) a, b);
-    	} else if (b instanceof Paddle) {
-    		paddlePuckCollision((Paddle) b, a);
-    	}
+        if (a instanceof Paddle) {
+            paddlePuckCollision((Paddle) a, b);
+        } else if (b instanceof Paddle) {
+            paddlePuckCollision((Paddle) b, a);
+        }
     }
-    
+
     public void paddlePuckCollision(Paddle paddle, Entity puck) {
-    	Vector3f paddle_velocity = paddle.getVelocity();
-    	Vector3f paddle_pos = paddle.getPos();
-    	
-    	boolean paddle_below_puck = paddle.getPos().x < puck.getPos().x;
-    	boolean puck_going_downwards = puck_velocity.x <= 0;
+        /*
+         * If puck crashed into paddle: reverse the puck's velocity and add the paddle's velocity
+         * If not (the paddle pushed on the puck): set the puck's velocity to the paddle's
+         * In either case, put the puck in front of the paddle by N amount. 
+         */
 
-    	System.out.println("puckcol " + paddle_below_puck + " .. " + puck_going_downwards);
+        Vector3f paddle_velocity = paddle.getVelocity();
 
-    	
-    	if (paddle_below_puck == puck_going_downwards) {
-        	Vector3f tmp_pvel = new Vector3f();
-        	tmp_pvel.x = -puck_velocity.x + paddle_velocity.x;
-//        	tmp_pvel.y = -puck_velocity.y + paddle_velocity.y;
-//        	tmp_pvel.z = -puck_velocity.z + paddle_velocity.z;
-        	System.out.println("vel: " + tmp_pvel);
-        	puck_velocity = tmp_pvel;
-        	puck.setPosition(paddle_pos.x + 1.5f * (puck_velocity.x > 0 ? 1 : -1), puck.getPos().y, puck.getPos().z);
-    	}
+        Vector3f last_paddle_pos = new Vector3f(
+                paddle.getPos().x - paddle_velocity.x,
+                paddle.getPos().y - paddle_velocity.y,
+                paddle.getPos().z - paddle_velocity.z);
 
+        Vector3f last_puck_pos = new Vector3f(
+                puck.getPos().x - puck_velocity.x,
+                puck.getPos().y - puck_velocity.y,
+                puck.getPos().z - puck_velocity.z);
+
+        boolean paddle_below_puck = last_paddle_pos.x < last_puck_pos.x;
+        boolean puck_going_downwards = puck_velocity.x < 0;
+        boolean paddle_going_downwards = paddle_velocity.x < 0;
+
+        boolean a = paddle_going_downwards;
+        boolean b = puck_going_downwards;
+        boolean c = paddle_below_puck;
+
+        if (paddle_velocity.x == 0 || (b && c || !b && !c)) { // reverse
+            puck_velocity.x = -puck_velocity.x + paddle_velocity.x;
+            puck.setPosition(paddle.getPos().x + 3f * (puck_velocity.x > 0 ? 1 : -1), puck.getPos().y, puck.getPos().z);
+        } else if ((!a && !b && c) || (a && !b && !c)) { // set
+            puck_velocity.x = paddle_velocity.x;
+            puck.setPosition(paddle.getPos().x + 3f * (puck_velocity.x > 0 ? 1 : -1), puck.getPos().y, puck.getPos().z);
+
+        } else {
+            System.out.println("This should never happen!" + Math.random());
+        }
     }
 }

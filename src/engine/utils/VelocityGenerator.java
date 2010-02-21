@@ -41,7 +41,7 @@ public class VelocityGenerator {
 		this.timepositions = new LinkedList<TimestampedPosition>();
 	}
 
-	public void push_move(Vector3f obj) {
+	public void push_pos(Vector3f obj) {
 		timepositions.addFirst(
 				new TimestampedPosition(obj, timer.getTime())
 		);
@@ -53,31 +53,23 @@ public class VelocityGenerator {
 
 		Vector3f vel = new Vector3f(0,0,0);
 
-		if (timepositions.size() > 0) {
-			TimestampedPosition last = new TimestampedPosition(timepositions.get(0).pos, current_time);
-			for (TimestampedPosition current: timepositions) {
-				float dt = last.time - current.time;
-				if (dt != 0) {
-					vel.x += (last.pos.x - current.pos.x) / dt;
-					vel.y += (last.pos.y - current.pos.y) / dt;
-					vel.z += (last.pos.z - current.pos.z) / dt;
-					last = current;
+		if (timepositions.size() > 1) {
+			Vector3f firstPos = timepositions.getFirst().pos;
+			for (TimestampedPosition tp: timepositions.subList(1, timepositions.size())) {
+			    
+				float dt = current_time - tp.time; 
+				
+				if (dt != 0 && (!tp.equals(firstPos))) {
+		            vel.x = (firstPos.x - tp.pos.x) / dt;
+		            vel.y = (firstPos.y - tp.pos.y) / dt;
+		            vel.z = (firstPos.z - tp.pos.z) / dt;
+		            return vel;
 				}
+								
 			}
 		}
+		
 		return vel;
-		//		boolean savedtt = (timer.getTime() - lastTime) == 0; // Saved this tick?
-		//		float dt = lastTime - secondLastTime;
-		//		if (deltaPos != null && savedtt && dt != 0) {
-		//
-		//			Vector3f velocity = new Vector3f();
-		//			velocity.x = deltaPos.x / dt;
-		//			velocity.y = deltaPos.y / dt;
-		//			velocity.z = deltaPos.z / dt;
-		//			return velocity;			
-		//		} else {
-		//			return new Vector3f(0,0,0);
-		//		}
 	}
 
 	/**

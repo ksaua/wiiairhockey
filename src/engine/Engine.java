@@ -92,22 +92,37 @@ public class Engine {
 
     public void loop() {
         Timer timer = new Timer();
-        float lasttime = timer.getTime();
+        float starttime = timer.getTime();
+        float lastdrawtime = timer.getTime();
+        float lastupdatetime = timer.getTime();
 
+        int frames = 0;
+        int updates = 0;
 
         while (running && !Display.isCloseRequested()) {
+            float currenttime = timer.getTime();
+            while ((currenttime - lastdrawtime) < (1 / 80f)) {
+                
+                // Calculate time
+                Timer.tick();
+                currenttime = timer.getTime();
+                float dt = currenttime - lastupdatetime;
 
-            // Calculate time
-            Timer.tick();
-            float dt = timer.getTime() - lasttime;
-            System.out.println("DT: " + dt);
-            lasttime = timer.getTime();
-
-            // Poll for events
-            kec.poll();
-            mec.poll();
-
-            currentState.update(this, gc, dt);
+                if (dt != 0) {
+                    lastupdatetime = currenttime;
+    
+                    // Poll for events
+                    kec.poll();
+                    mec.poll();
+    
+                    currentState.update(this, gc, dt);
+                    
+                    updates++;
+                }
+                
+            }
+            
+            lastdrawtime = timer.getTime();
 
             // Reset color
             GL11.glColor3f(1, 1, 1);
@@ -120,8 +135,11 @@ public class Engine {
 
             Display.update();
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+            
+            frames++;
         }
 
+        System.out.println("Average fps: " + frames / (timer.getTime() - starttime) + ", average updates/s: " + updates / (timer.getTime() - starttime));
         Display.destroy();
         System.exit(0);		
     }

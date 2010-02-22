@@ -107,7 +107,7 @@ public class Engine {
                 Timer.tick();
                 currenttime = timer.getTime();
                 float dt = currenttime - lastupdatetime;
-
+                
                 if (dt != 0) {
                     lastupdatetime = currenttime;
     

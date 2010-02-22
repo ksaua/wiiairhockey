@@ -13,6 +13,7 @@ import org.lwjgl.util.Timer;
 import engine.events.Event;
 import engine.events.KeyboardEventCreator;
 import engine.events.MouseEventCreator;
+import engine.utils.SmoothTimer;
 
 public class Engine {
     private HashMap<String, State> states;
@@ -98,15 +99,20 @@ public class Engine {
 
         int frames = 0;
         int updates = 0;
+        
+        SmoothTimer st = new SmoothTimer(30);
 
         while (running && !Display.isCloseRequested()) {
             float currenttime = timer.getTime();
             while ((currenttime - lastdrawtime) < (1 / 80f)) {
+                                
                 
                 // Calculate time
                 Timer.tick();
                 currenttime = timer.getTime();
-                float dt = currenttime - lastupdatetime;
+                
+                st.pushTime(currenttime);
+                float dt = st.getDelta();
                 
                 if (dt != 0) {
                     lastupdatetime = currenttime;

@@ -106,6 +106,12 @@ public class Ingame extends EmptyState implements CollisionHandler {
     @Override
     public void onEnter(Engine e, GraphicContext gc) {
         scores = new int[2];
+        Mouse.setGrabbed(true);
+    }
+    
+    @Override
+    public void onExit(Engine e, GraphicContext gc) {
+        Mouse.setGrabbed(false);
     }
 
     @Override

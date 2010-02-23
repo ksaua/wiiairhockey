@@ -82,6 +82,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
         Renderable paddle = MediaLoader.loadObj("paddle.obj");
         paddles[0].setRenderComponent(paddle);
         paddles[1].setRenderComponent(paddle);
+        paddles[1].increaseRotation(0, (float) Math.PI, 0);
         table.setRenderComponent(MediaLoader.loadObj("table2.obj"));
         puck.setRenderComponent(MediaLoader.loadObj("puck.obj"));
     }
@@ -103,7 +104,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
 
     @Override
     public void update(Engine e, GraphicContext gc, float dt) {
-        paddles[0].move(mouseBuffer.getY() * 0.02f, 0, mouseBuffer.getX() * 0.02f);
+        paddles[0].move(mouseBuffer.getY() * 0.01f, 0, mouseBuffer.getX() * 0.01f);
         
         cs.check();
 
@@ -138,6 +139,14 @@ public class Ingame extends EmptyState implements CollisionHandler {
             engine.setState("menu");
         }
 
+        if (lwjglId == Keyboard.KEY_A) {
+        	paddles[0].increaseRotation(0,-0.1f, 0);
+        }
+        
+        if (lwjglId == Keyboard.KEY_D) {
+        	paddles[0].increaseRotation(0, 0.1f, 0);
+        }
+        
         // Reset mouse
         if (lwjglId == Keyboard.KEY_SPACE) {
             Mouse.setCursorPosition(400, 300);

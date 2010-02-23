@@ -24,12 +24,4 @@ public class SmoothTimer extends Timer {
     public float getDelta() {
         return (times.getFirst() - times.getLast()) / smoothamount;
     }
-    
-    public static void main(String[] args) {
-        SmoothTimer st = new SmoothTimer(5);
-        
-        for (float i = 0; i < 50; i+=0.1f) {
-            st.pushTime(i); System.out.println(st.getDelta());
-        }
-    }
 }

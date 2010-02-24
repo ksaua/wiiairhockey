@@ -17,6 +17,7 @@ import engine.Renderable;
 import engine.TrueTypeFont;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.CollisionHandler;
+import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
 import engine.utils.MouseBuffer;
 
@@ -146,11 +147,11 @@ public class Ingame extends EmptyState implements CollisionHandler {
     }
 
     @Override
-    public void collisionOccured(Entity a, Entity b) {
-        if (a instanceof Paddle) {
-            puckController.paddleCollision((Paddle)a);
-        } else if (b instanceof Paddle) {
-            puckController.paddleCollision((Paddle)b);
+    public void collisionOccured(CollisionResponse cr) {
+        if (cr.getEntity1() instanceof Paddle) {
+            puckController.paddleCollision((Paddle)cr.getEntity1());
+        } else if (cr.getEntity2() instanceof Paddle) {
+            puckController.paddleCollision((Paddle)cr.getEntity2());
         }
     }
 }

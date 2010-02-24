@@ -4,6 +4,7 @@ import engine.Entity;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.BoundingCircle;
 import engine.collisionsystem2D.CollisionHandler;
+import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
 
 public class CollisionTest {
@@ -14,8 +15,8 @@ public class CollisionTest {
         Collisionsystem cs = new Collisionsystem();
         cs.addCollisionHandler(new CollisionHandler() {
             @Override
-            public void collisionOccured(Entity a, Entity b) {
-                System.out.println("Collision occured");
+            public void collisionOccured(CollisionResponse cr) {
+                System.out.println("Collision occured" + cr);
             }
         });
         cs.addEntity(a, new BoundingBox(a, 10, 5));
@@ -41,7 +42,7 @@ public class CollisionTest {
         cs = new Collisionsystem();
         cs.addCollisionHandler(new CollisionHandler() {
             @Override
-            public void collisionOccured(Entity a, Entity b) {
+            public void collisionOccured(CollisionResponse cr) {
                 System.out.println("Collision occured");
             }
         });

@@ -17,74 +17,81 @@ import org.lwjgl.util.vector.Vector3f;
 
 public class VelocityGenerator {
 
-	private static class TimestampedPosition {
-		Vector3f pos;
-		float time;
+    private static class TimestampedPosition {
+        Vector3f pos;
+        float time;
 
-		public TimestampedPosition(Vector3f p, float t) {
-			pos = p; time = t;
-		}
-	}
+        public TimestampedPosition(Vector3f p, float t) {
+            pos = p; time = t;
+        }
+    }
 
-	LinkedList<TimestampedPosition> timepositions;
+    LinkedList<TimestampedPosition> timepositions;
 
-	private float savefor;
+    private float savefor;
 
-	private Timer timer;
+    private Timer timer;
 
-	/**
-	 * @param savefor Average out the last n seconds of velocity.  
-	 */
-	public VelocityGenerator(float savefor) {
-		this.savefor = savefor;
-		this.timer = new Timer();
-		this.timepositions = new LinkedList<TimestampedPosition>();
-	}
+    /**
+     * @param savefor Average out the last n seconds of velocity.  
+     */
+    public VelocityGenerator(float savefor) {
+        this.savefor = savefor;
+        this.timer = new Timer();
+        this.timepositions = new LinkedList<TimestampedPosition>();
+    }
 
-	public void push_pos(Vector3f obj) {
-		timepositions.addFirst(
-				new TimestampedPosition(obj, timer.getTime())
-		);
-	}
+    public void push_pos(Vector3f obj) {
+        timepositions.addFirst(
+                new TimestampedPosition(obj, timer.getTime())
+        );
+    }
 
-	public Vector3f getVelocity() {
-		float current_time = timer.getTime();
-		cleanup_list(current_time);
+    public Vector3f getVelocity() {
+        float current_time = timer.getTime();
+        cleanup_list(current_time);
 
-		Vector3f vel = new Vector3f(0,0,0);
+        Vector3f vel = new Vector3f(0,0,0);
 
-		if (timepositions.size() > 1) {
-			Vector3f firstPos = timepositions.getFirst().pos;
-			for (TimestampedPosition tp: timepositions.subList(1, timepositions.size())) {
-			    
-				float dt = current_time - tp.time; 
-				
-				if (dt != 0 && (!tp.equals(firstPos))) {
-		            vel.x = (firstPos.x - tp.pos.x) / dt;
-		            vel.y = (firstPos.y - tp.pos.y) / dt;
-		            vel.z = (firstPos.z - tp.pos.z) / dt;
-		            return vel;
-				}
-								
-			}
-		}
-		
-		return vel;
-	}
+        if (timepositions.size() > 1) {
 
-	/**
-	 * Remove entries older than set time limit
-	 * @param current_time
-	 */
-	private void cleanup_list(float current_time) {
-		int end_index = -1;
+            TimestampedPosition last = timepositions.getFirst();
+            for (TimestampedPosition current: timepositions) {
 
-		for (TimestampedPosition tp: timepositions) {
-			if ((current_time - tp.time) > savefor) break;
-			end_index++;
-		}
+                vel.x += (last.pos.x - current.pos.x);
+                vel.y += (last.pos.y - current.pos.y);
+                vel.z += (last.pos.z - current.pos.z);
+                
+                last = current;
+            } 
 
-		if (timepositions.size() != 0 && end_index != timepositions.size()) 
-			timepositions.subList(end_index + 1, timepositions.size()).clear();
-	}
+            float dt = current_time - timepositions.getLast().time;
+
+            vel.scale(1 / dt);
+//            vel.x = totmovement / dt;
+//            vel.y = (ps1.pos.y - ps2.pos.y) / dt;
+//            vel.z = (ps1.pos.z - ps2.pos.z) / dt;
+
+            //			Vector3f firstPos = timepositions.getFirst().pos;
+
+        }
+
+        return vel;
+    }
+
+    /**
+     * Remove entries older than set time limit
+     * @param current_time
+     */
+    private void cleanup_list(float current_time) {
+        int end_index = -1;
+
+        for (TimestampedPosition tp: timepositions) {
+            if ((current_time - tp.time) > savefor) break;
+            end_index++;
+        }
+
+        if (timepositions.size() != 0 && end_index != timepositions.size()) 
+            timepositions.subList(end_index + 1, timepositions.size()).clear();
+    }
 }

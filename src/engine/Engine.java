@@ -100,7 +100,7 @@ public class Engine {
         int frames = 0;
         int updates = 0;
         
-        SmoothTimer st = new SmoothTimer(30);
+        SmoothTimer.amount = 100;
 
         while (running && !Display.isCloseRequested()) {
             float currenttime = timer.getTime();
@@ -111,9 +111,9 @@ public class Engine {
                 Timer.tick();
                 currenttime = timer.getTime();
                 
-                st.pushTime(currenttime);
-                float dt = st.getDelta();
-                
+                SmoothTimer.tick();
+                float dt = SmoothTimer.getDelta();
+                                
                 if (dt != 0) {
                     lastupdatetime = currenttime;
     

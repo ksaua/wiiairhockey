@@ -48,7 +48,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
     public void init(Engine e, GraphicContext gc) {
         this.engine = e;
 
-        mouseBuffer = new MouseBuffer(15);
+        mouseBuffer = new MouseBuffer(1);
         
         cs = new Collisionsystem();
         cs.addCollisionHandler(this);
@@ -103,7 +103,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
 
     @Override
     public void update(Engine e, GraphicContext gc, float dt) {
-        paddles[0].move(mouseBuffer.getY() * 0.02f, 0, mouseBuffer.getX() * 0.02f);
+        paddles[0].move(mouseBuffer.getY() * 0.01f, 0, mouseBuffer.getX() * 0.01f);
         
         cs.check();
 

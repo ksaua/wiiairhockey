@@ -40,8 +40,8 @@ public class BoundingBox implements Bounds {
         
         vertices[0] = new Vector2f(posx + ( x) * cos - ( y) * sin, posy + ( y) * cos + ( x) * sin);
         vertices[1] = new Vector2f(posx + (-x) * cos - ( y) * sin, posy + ( y) * cos + (-x) * sin);
-        vertices[2] = new Vector2f(posx + ( x) * cos - (-y) * sin, posy + (-y) * cos + ( x) * sin);
-        vertices[3] = new Vector2f(posx + (-x) * cos - (-y) * sin, posy + (-y) * cos + (-x) * sin);
+        vertices[2] = new Vector2f(posx + (-x) * cos - (-y) * sin, posy + (-y) * cos + (-x) * sin);
+        vertices[3] = new Vector2f(posx + ( x) * cos - (-y) * sin, posy + (-y) * cos + ( x) * sin);
     }
 
 }

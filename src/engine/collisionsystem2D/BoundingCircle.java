@@ -20,5 +20,5 @@ public class BoundingCircle implements Bounds {
     }
 
     @Override
-    public void updateVertices() { }
+    public void update() { }
 }

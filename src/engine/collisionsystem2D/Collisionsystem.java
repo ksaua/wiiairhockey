@@ -56,7 +56,7 @@ public class Collisionsystem implements ChangeListener {
     @Override
     public void change(SubscribeableChanges source, int id) {
         CollisionEntity src = entities.get((Entity) source);
-        src.bounds.updateVertices();
+        src.bounds.update();
         src.dirty = true;
     }
     

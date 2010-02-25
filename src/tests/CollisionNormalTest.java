@@ -2,16 +2,15 @@ package tests;
 
 import java.awt.Font;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
 
 import engine.EmptyState;
 import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
-import engine.Renderable;
 import engine.TrueTypeFont;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.CollisionHandler;
@@ -72,8 +71,8 @@ public class CollisionNormalTest extends EmptyState implements CollisionHandler 
     public void render(Engine e, GraphicContext gc) {
         gc.start2dDrawing();
         
-        drawSquare(mousemoveable.getPos(), 2);
-        drawSquare(stationary.getPos(), 1);
+        drawSquare(mousemoveable, 2);
+        drawSquare(stationary, 1);
         
         cs.check();
         
@@ -81,24 +80,32 @@ public class CollisionNormalTest extends EmptyState implements CollisionHandler 
             GL11.glColor3f(1, 1, 1);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             if (normal1 != null) {
-                drawVector(normal1);
-                ttf.drawString(50, 50, normal1.toString(), 1, 1);
+                ttf.drawString(50, 150, normal1.toString(), 1, 1);
             }
             if (normal2 != null) {
-                drawVector(normal2);
-                ttf.drawString(50, 75, normal2.toString(), 1, 1);
+
+                ttf.drawString(50, 175, normal2.toString(), 1, 1);
             }
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             
+            if (normal1 != null) {
+                GL11.glTranslated(100f, 50f, 0);
+                drawVector(normal1);
+            }
+            if (normal2 != null) {
+                GL11.glTranslated(100f, 0, 0);
+                drawVector(normal2);
+            }
         }
         
 
         
     }
     
-    public void drawSquare(Vector3f pos, float size) {
+    public void drawSquare(Entity e, float size) {
         GL11.glPushMatrix();
-        GL11.glTranslatef(pos.x, pos.z, 0);
+        GL11.glTranslatef(e.getPos().x, e.getPos().z, 0);
+        GL11.glRotatef((float) Math.toDegrees(e.getRot().y), 0, 0, 1);
         Square.render(size);
         GL11.glPopMatrix();
     }
@@ -120,6 +127,18 @@ public class CollisionNormalTest extends EmptyState implements CollisionHandler 
         mousemoveable.move(dx, 0, dy);
         collision = false;
     }    
+    
+    @Override
+    public void keyReleased(int lwjglId, char keyChar) {
+        if (lwjglId == Keyboard.KEY_A) {
+            mousemoveable.increaseRotation(0, 0.5f, 0);
+        }
+        
+        if (lwjglId == Keyboard.KEY_D) {
+            mousemoveable.increaseRotation(0,-0.5f, 0);
+        }
+    }
+    
     public static void main(String[] args) {
         Engine e = new Engine("Test spill");
         e.addState("Meh", new CollisionNormalTest() );
@@ -129,7 +148,7 @@ public class CollisionNormalTest extends EmptyState implements CollisionHandler 
 
     @Override
     public void collisionOccured(CollisionResponse cr) {
-        System.out.println("Collision!");
+        System.out.println(cr.getEntity1() + ", " + cr.getNormal1() + ", " + cr.getEntity2() + ", " + cr.getNormal2());
         collision = true;
         normal1 = cr.getNormal1();
         normal2 = cr.getNormal2();

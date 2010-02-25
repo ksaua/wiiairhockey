@@ -1,7 +1,11 @@
 package engine.collisionsystem2D;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+
 import org.lwjgl.util.vector.Vector2f;
 
+import engine.utils.Line;
 import engine.utils.NormalCreator;
 
 public class CollisionCheckers {
@@ -19,18 +23,58 @@ public class CollisionCheckers {
         }
     }
 
-    public static CollisionCheckerResponse collides(BoundingBox b1, BoundingBox b2) {
-        for (Vector2f v: b1.getVertices()) {
-            Vector2f normal = polygonContainsVertex(b2.getVertices(), v);
-            if (normal != null)
-                return new CollisionCheckerResponse(true, null, normal);
+
+    public static CollisionCheckerResponse collides(BoundingBox box1, BoundingBox box2) {
+        Vector2f n1 = findCollisionNormal(box1, box2);
+        
+        // No need to check both if one is zero. Though this makes it be false when one object is completely inside another.
+        if (n1 == null) return new CollisionCheckerResponse(false, null, null);
+        
+        Vector2f n2 = findCollisionNormal(box2, box1);
+        return new CollisionCheckerResponse(true, n1, n2); 
+    }
+
+    private static Vector2f findCollisionNormal(BoundingBox box1, BoundingBox box2) {
+        
+        // Find out what vertices is inside for faster reference later
+        HashMap<Vector2f, Boolean> verticesInside = new HashMap<Vector2f, Boolean>();
+        for (Vector2f v: box1.getVertices()) {
+            if (polygonContainsVertex(box2.getVertices(), v))
+                verticesInside.put(v, true);
+            else 
+                verticesInside.put(v, false);
         }
-        for (Vector2f v: b2.getVertices()) {
-            Vector2f normal = polygonContainsVertex(b1.getVertices(), v);
-            if (normal != null)
-                return new CollisionCheckerResponse(true, normal, null);
+
+
+        LinkedList<Line> linesInside = new LinkedList<Line>();
+
+        for (Line line: box1.getLines()) {
+
+            // If box2 contains line: Normal is this line's normal
+            if (verticesInside.get(line.start) && verticesInside.get(line.end)) {
+                return NormalCreator.findNormal(line.start, line.end);
+            }
+
+            // If one of the points is inside, add it to a list.
+            else if (verticesInside.get(line.start) || verticesInside.get(line.end)) {
+                linesInside.add(line);
+            }
+            
+            // The line might still intersect even thought it's not inside.
+            else {
+                for (Line line2: box2.getLines()) {
+                    if (lineIntersection(line, line2) != null) {
+                        linesInside.add(line);
+                    }
+                }
+            }
+
         }
-        return new CollisionCheckerResponse(false, null, null);
+        
+        if (linesInside.size() == 0) return null;
+
+        return NormalCreator.findNormal(linesInside);
+
     }
 
     public static CollisionCheckerResponse collides(BoundingCircle bounds, BoundingCircle bounds2) {
@@ -43,24 +87,51 @@ public class CollisionCheckers {
         return new CollisionCheckerResponse(distance < distance2, null, null);
     }
 
+    private static Vector2f lineIntersection(Line a, Line b) {
+        // http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/
+        float x1 = a.start.x;
+        float x2 = a.end.x;
+        float x3 = b.start.x;
+        float x4 = b.end.x;
 
-    private static Vector2f polygonContainsVertex(Vector2f[] vertices, Vector2f pos) {
+        float y1 = a.start.y;
+        float y2 = a.end.y;
+        float y3 = b.start.y;
+        float y4 = b.end.y;
+
+        float denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+
+        if (denom == 0) return null;
+
+        float ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom; 
+
+        float ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+
+        // Not inside the line segment
+        if (0 > ua || ua > 1 || 0 > ub || ub > 1 ) return null;
+
+        float x = x1 + ua * (x2 - x1);
+        float y = y1 + ua * (y2 - y1);
+
+        return new Vector2f(x, y);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(lineIntersection(new Line(new Vector2f( 2, -2), new Vector2f(-2, 2)), new Line(new Vector2f( 3, -3), new Vector2f(-3, 3))));
+    }
+
+    private static boolean polygonContainsVertex(Vector2f[] vertices, Vector2f pos) {
         boolean inside = false;
         Vector2f previous = vertices[vertices.length - 1];
-        Vector2f normal = null;
         for (Vector2f current: vertices) {
             if (current.getY() > pos.getY() != previous.getY() > pos.getY()) {
                 if (current.getX() + (pos.getY() - current.getY()) / (previous.getY() - current.getY()) * (previous.getX() - current.getX()) < pos.getX()) {
-                    normal = NormalCreator.findNormal(current, previous);
                     inside = !inside;
                 }
             }
             previous = current;
         }
-        if (inside)
-            return normal; 
-        else
-            return null;
+        return inside;
     }
 
     /**

@@ -3,9 +3,12 @@ package engine.collisionsystem2D;
 import org.lwjgl.util.vector.Vector2f;
 
 import engine.Entity;
+import engine.utils.Line;
 
 public class BoundingBox implements Bounds {
+        
     private Vector2f[] vertices;
+    private Line[] lines;
     private Entity entity;
     private float width;
     private float height;
@@ -16,16 +19,21 @@ public class BoundingBox implements Bounds {
         this.height = height;
 
         vertices = new Vector2f[4];
+        lines = new Line[4];
 
-        updateVertices();
+        update();
     }    
 
     public Vector2f[] getVertices() {
         return vertices;
     }
+    
+    public Line[] getLines() {
+        return lines;
+    }
 
     @Override
-    public void updateVertices() {
+    public void update() {
 
         float sin = (float)Math.sin(entity.getRot().y);
         float cos = (float)Math.cos(entity.getRot().y);
@@ -42,6 +50,10 @@ public class BoundingBox implements Bounds {
         vertices[1] = new Vector2f(posx + (-x) * cos - ( y) * sin, posy + ( y) * cos + (-x) * sin);
         vertices[2] = new Vector2f(posx + (-x) * cos - (-y) * sin, posy + (-y) * cos + (-x) * sin);
         vertices[3] = new Vector2f(posx + ( x) * cos - (-y) * sin, posy + (-y) * cos + ( x) * sin);
+        
+        for (int i = 0; i < 4; i++) {
+            lines[i] = new Line(vertices[i - 1 < 0 ? 3 : i - 1], vertices[i]);
+        }
     }
 
 }

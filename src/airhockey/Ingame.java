@@ -70,7 +70,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
         puck = new Entity(-10, 2, 0);
 
         cs.addEntity(paddles[0], new BoundingBox(paddles[0], 2, 10));
-        cs.addEntity(paddles[1], new BoundingBox(paddles[1], 2, 10));
+//        cs.addEntity(paddles[1], new BoundingBox(paddles[1], 2, 10));
         cs.addEntity(puck, new BoundingBox(puck, 2, 2));
 
         Font font = new Font("Courier New", Font.BOLD, 32);
@@ -158,9 +158,9 @@ public class Ingame extends EmptyState implements CollisionHandler {
     @Override
     public void collisionOccured(CollisionResponse cr) {
         if (cr.getEntity1() instanceof Paddle) {
-            puckController.paddleCollision((Paddle)cr.getEntity1());
+            puckController.paddleCollision((Paddle)cr.getEntity1(), cr.getNormal2());
         } else if (cr.getEntity2() instanceof Paddle) {
-            puckController.paddleCollision((Paddle)cr.getEntity2());
+            puckController.paddleCollision((Paddle)cr.getEntity2(), cr.getNormal1());
         }
     }
 }

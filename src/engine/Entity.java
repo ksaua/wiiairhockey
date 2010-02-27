@@ -84,9 +84,9 @@ public class Entity extends SubscribeableChanges implements Renderable {
 			GL11.glPushMatrix();
 
 			GL11.glTranslatef(pos.x, pos.y, pos.z);
-			GL11.glRotatef(deg(rot.x), 1, 0, 0);
-			GL11.glRotatef(deg(rot.y), 0, 1, 0);
-			GL11.glRotatef(deg(rot.z), 0, 0, 1);
+			GL11.glRotatef(-deg(rot.x), 1, 0, 0);
+			GL11.glRotatef(-deg(rot.y), 0, 1, 0);
+			GL11.glRotatef(-deg(rot.z), 0, 0, 1);
 			rendercomponent.render();
 			GL11.glPopMatrix();
 

@@ -85,11 +85,11 @@ public class Engine {
 
         // Initialize all states
         for (State state: states.values()) {
-            state.init(this, gc);
+            state.init(this, graphiccontext);
         }
     }
 
-    GraphicContext gc = new GraphicContext();
+    GraphicContext graphiccontext = new GraphicContext();
 
     public void loop() {
         Timer timer = new Timer();
@@ -113,27 +113,24 @@ public class Engine {
                                 
                 if (dt != 0) {
                     lastupdatetime = currenttime;
-    
                     // Poll for events
                     kec.poll();
                     mec.poll();
-    
-                    currentState.update(this, gc, dt);
+                    currentState.update(this, graphiccontext, dt);
                     
                     updates++;
                 }
-                
             }
-            
+
             lastdrawtime = timer.getTime();
 
             // Reset color
             GL11.glColor3f(1, 1, 1);
 
             // Start drawing 
-            gc.start3dDrawing();
+            graphiccontext.start3dDrawing();
             GL11.glLoadIdentity();
-            currentState.render(this, gc);
+            currentState.render(this, graphiccontext);
 
 
             Display.update();
@@ -149,7 +146,7 @@ public class Engine {
     
     public void addState(String id, State state) {
         if (states.isEmpty()) {
-            state.onEnter(this, gc);
+            state.onEnter(this, graphiccontext);
             setUpListeners(null, state);
             currentState = state;
         }
@@ -159,8 +156,8 @@ public class Engine {
     public void setState(String id) {
         State newState = states.get(id); 
 
-        currentState.onExit(this, gc);
-        newState.onEnter(this, gc);
+        currentState.onExit(this, graphiccontext);
+        newState.onEnter(this, graphiccontext);
 
         setUpListeners(currentState, newState);
         

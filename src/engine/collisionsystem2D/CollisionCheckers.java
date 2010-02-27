@@ -23,6 +23,25 @@ public class CollisionCheckers {
         }
     }
 
+    
+    public static CollisionCheckerResponse collides(BoundingCircle circle, BoundingBox box) {
+        for (Line line: box.getLines()) {
+            Vector2f pos = new Vector2f(circle.getEntity().getPos().x, circle.getEntity().getPos().z);
+            if (lineIntersectsCircle(line, circle.getRadius(), pos)) {
+                return new CollisionCheckerResponse(true, null, NormalCreator.findNormal(line.end, line.start));
+            }
+        }
+        return new CollisionCheckerResponse(false, null, null);
+    }
+    
+    public static CollisionCheckerResponse collides(BoundingBox box, BoundingCircle circle) {
+        CollisionCheckerResponse ccr = collides(circle, box);
+        Vector2f temp = ccr.normal1;
+        ccr.normal1 = ccr.normal2;
+        ccr.normal2 = temp;
+        return ccr;
+    }
+    
 
     public static CollisionCheckerResponse collides(BoundingBox box1, BoundingBox box2) {
         Vector2f n1 = findCollisionNormal(box1, box2);
@@ -87,8 +106,35 @@ public class CollisionCheckers {
         return new CollisionCheckerResponse(distance < distance2, null, null);
     }
 
-    public static void main(String[] args) {
-        System.out.println(Line.lineIntersection(new Line(new Vector2f( 2, -2), new Vector2f(-2, 2)), new Line(new Vector2f( 3, -3), new Vector2f(-3, 3))));
+    private static boolean lineIntersectsCircle(Line line, float radius, Vector2f pos) {
+        
+        // Check too see if they are even close
+        float minx = Math.min(line.start.x, line.end.x) - radius;
+        float maxx = Math.max(line.start.x, line.end.x) + radius;
+        
+        float miny = Math.min(line.start.y, line.end.y) - radius;
+        float maxy = Math.max(line.start.y, line.end.y) + radius;
+        
+        if (!(minx < pos.x && pos.x < maxx && miny < pos.y && pos.y < maxy))
+            return false;
+        
+        // Find the distance and see if it is less than radius
+        Vector2f normal = NormalCreator.findNormal(line.start, line.end);
+        
+        Vector2f intersection =  Line.lineIntersection(
+                line.start.x, line.start.y,
+                line.end.x, line.end.y,
+                pos.x + normal.x * radius, pos.y + normal.y * radius,
+                pos.x - normal.x * radius, pos.y - normal.y * radius);
+        
+        float radiussq = radius * radius;
+        
+        return intersection != null || distanceSquared(pos, line.start) < radiussq || distanceSquared(pos, line.end) < radiussq;
+        
+    }
+    
+    private static float distanceSquared(Vector2f a, Vector2f b) {
+        return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);  
     }
 
     private static boolean polygonContainsVertex(Vector2f[] vertices, Vector2f pos) {

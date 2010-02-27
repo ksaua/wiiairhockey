@@ -17,102 +17,92 @@ public class PuckController implements Controller {
     }
 
     public void paddleCollision(Paddle paddle, Vector2f normal) {
-
-        Vector3f paddle_velocity = paddle.getVelocity();
-        Vector2f paddle_velocity2f = new Vector2f(paddle_velocity.z, paddle_velocity.x);
         
-        Vector2f paddle_pos = new Vector2f(paddle.getPos().z, paddle.getPos().x);
-        Vector2f puck_pos = new Vector2f(puck.getPos().z, puck.getPos().x);
+        Vector3f paddle_velocity = paddle.getVelocity(); 
+        Vector2f paddle_velocity2f = new Vector2f(paddle_velocity.x, paddle_velocity.z);
         
-        Vector2f velocity2f = new Vector2f(velocity.z, velocity.x); 
-
-
-        // Calculate reflection
-        Vector2f reflectedvector;
-        //		Vector2f normal = new Vector2f(
-        //				(float)-Math.sin(paddle.getRot().y),
-        //				(float)Math.cos(paddle.getRot().y));
-
-//        System.out.print(normal);
-
-        normal.scale(2 * Vector2f.dot(velocity2f, normal) / Vector2f.dot(normal, normal));
-        reflectedvector = Vector2f.sub(normal, velocity2f, null);
-        reflectedvector.normalise();
-
-//        System.out.println(" .. " + reflectedvector);
-
-
-        /*
-         * If puck crashed into paddle: reverse the puck's velocity and add the paddle's velocity
-         * If not (the paddle pushed on the puck): set the puck's velocity to the paddle's
-         * In either case, put the puck in front of the paddle by N amount. 
-         */
-
-        // *** Calculate speed ***
-//
-//
-//        Vector3f last_paddle_pos = new Vector3f(
-//                paddle.getPos().x - paddle_velocity.x,
-//                paddle.getPos().y - paddle_velocity.y,
-//                paddle.getPos().z - paddle_velocity.z);
-
-        Vector2f next_pos = new Vector2f(puck_pos.x + 1000 * velocity2f.x, puck_pos.y + 1000 * velocity2f.y);
-        Vector2f last_pos = new Vector2f(puck_pos.x - velocity2f.x, puck_pos.y - velocity2f.y);
+//        Vector2f paddle_pos = new Vector2f(paddle.getPos().z, paddle.getPos().x);
+        float paddle_posx = paddle.getPos().x;
+        float paddle_posy = paddle.getPos().z;
         
-        float x = (float) (Math.cos(paddle.getRot().y) * 1000);
-        float y = (float) (Math.sin(paddle.getRot().y) * 1000);
+//        Vector2f puck_pos = new Vector2f(puck.getPos().z, puck.getPos().x);
+        float puck_posx = puck.getPos().x;
+        float puck_posy = puck.getPos().z;
         
-        Line line = new Line(new Vector2f(paddle_pos.x + x, paddle_pos.y + y), new Vector2f(paddle_pos.x -x, paddle_pos.y -y));
-        Line line2 = new Line(next_pos, puck_pos);
-        System.out.println(line + ", " + line2);
-        boolean puck_heading_towards_paddle = Line.lineIntersection(line, line2) != null;
+        Vector2f velocity2f = new Vector2f(velocity.x, velocity.z); 
         
-//        System.out.println(next_pos + ", " + ", " + puck_heading_towards_paddle + ", " + Vector2f.sub(next_pos, now_pos, null));
+        float puck_length = 1000 * velocity2f.x;
+        float puck_height = 1000 * velocity2f.y;
         
-//            Vector3f.sub(last_puck_pos2, paddle.getPos(), null).lengthSquared() >
-//            Vector3f.sub(last_puck_pos, paddle.getPos(), null).lengthSquared();
+        float paddle_length = (float) (Math.sin(paddle.getRot().y) * 1000);
+        float paddle_height = (float) (Math.cos(paddle.getRot().y) * 1000);
 
-//        boolean paddle_below_puck = last_paddle_pos.x < last_puck_pos.x;
-//        boolean puck_going_downwards = velocity.x < 0;
-//        boolean paddle_going_downwards = paddle_velocity.x < 0;
-
-//        boolean a = paddle_going_downwards;
-//        boolean b = puck_going_downwards;
-//        boolean c = paddle_below_puck;
-
-        float current_speed;
-
-        if (puck_heading_towards_paddle) {
-            System.out.println("Heading");
-            current_speed = Vector2f.sub(velocity2f, paddle_velocity2f, null).length();
-        } else {
-            System.out.println("Not heading");
-            current_speed = paddle_velocity2f.length();
-            reflectedvector.negate();
+        boolean puck_heading_towards_paddle = Line.lineIntersection(
+                paddle_posx + paddle_length, paddle_posy + paddle_height,
+                paddle_posx - paddle_length, paddle_posy - paddle_height,
+                puck_posx + puck_length, puck_posy + puck_height,
+                puck_posx, puck_posy) != null;
+        
+        // Project the paddle's velocity onto the normal so we can find how much the paddle influences the puck
+        if (paddle_velocity2f.x != 0 || paddle_velocity2f.y != 0) {
+            float angle = Vector2f.angle(paddle_velocity2f, normal);
+            
+            float newlength = (float) (Math.cos(angle) * paddle_velocity2f.length());
+            paddle_velocity2f.x = normal.x * newlength;
+            paddle_velocity2f.y = normal.y * newlength;
         }
-//        if (paddle_velocity.x == 0 || (b && c || !b && !c)) { // Paddle touches the puck. Need to reverse the normal
-//            current_speed = paddle_velocity2f.length() + velocity2f.length();
-//        } else if ((!a && !b && c) || (a && !b && !c)) { // Paddle pushes on the puck!
-//            reflectedvector.scale(-1);
-//            current_speed = paddle_velocity2f.length();
-//        } else { // Paddle and puck goes different ways, but somehow collides (possibly jumped over paddle).
-//            System.out.println("This should never happen!" + Math.random());
-//            return;
-//        }
+        
+        if (puck_heading_towards_paddle) {
+            // Calculate reflection
+            Vector2f reflectedvector = getReflectedVector(normal, velocity2f);
+
+            velocity2f.x = paddle_velocity2f.x + reflectedvector.x;
+            velocity2f.y = paddle_velocity2f.y + reflectedvector.y;
+
+        } else {
+            Vector2f middlevector = Vector2f.add(velocity2f, paddle_velocity2f, null);
+            middlevector.normalise();
+            
+            float newlength1 = 0;
+            if (paddle_velocity2f.x != 0 || paddle_velocity2f.y != 0) {
+                float angle = Vector2f.angle(paddle_velocity2f, middlevector);
+                newlength1 = (float) (Math.cos(angle) * paddle_velocity2f.length());
+            }
+
+            
+            float angle = Vector2f.angle(velocity2f, middlevector);
+            float newlength2 = (float) (Math.cos(angle) * velocity2f.length());
+
+            velocity2f.x = middlevector.x * (newlength1 + newlength2);
+            velocity2f.y = middlevector.y * (newlength1 + newlength2);
+        }
+                
+        Vector2f normalizedvelocity = velocity2f.normalise(null);
+        velocity.x = velocity2f.x;
+        velocity.z = velocity2f.y;
         
         // Move the puck to be positioned in front of the paddle
-        Vector2f move = new Vector2f(reflectedvector.x * 2f, reflectedvector.y * 2f);
-                
-        puck.setPosition(puck.getPos().x + move.y, puck.getPos().y, puck.getPos().z + move.x);
+        puck.move(normalizedvelocity.x * 2f, 0, normalizedvelocity.y * 2f);
+//        puck.setPosition(puck.getPos().x + move.x, puck.getPos().y, puck.getPos().z + move.y);
 
+        
         // Scale the normal to the speed
 
-        reflectedvector.scale(current_speed);
-
-        velocity.x = reflectedvector.y;
-        velocity.z = reflectedvector.x;
+//        reflectedvector.scale(current_speed);
+//
+//        velocity.x = reflectedvector.y;
+//        velocity.z = reflectedvector.x;
     }
 
+    private Vector2f getReflectedVector(Vector2f normal, Vector2f vector) {
+        Vector2f n = new Vector2f(normal.x, normal.y);
+        n.scale(2 * Vector2f.dot(vector, n) / Vector2f.dot(n, n));
+        n.x -= vector.x;
+        n.y -= vector.y;
+        n.negate();
+        return n;
+    }
+    
     @Override
     public void update(float dt) {
         if (Math.abs(puck.getPos().x) > 30) velocity.x *= -1;

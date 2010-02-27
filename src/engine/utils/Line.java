@@ -17,17 +17,15 @@ public class Line {
     }
     
     public static Vector2f lineIntersection(Line a, Line b) {
+        return lineIntersection(
+                a.start.x, a.start.y,
+                a.end.x, a.end.y,
+                b.start.x, b.start.y,
+                b.end.x, b.end.y);
+    }
+    
+    public static Vector2f lineIntersection(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
         // http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/
-        float x1 = a.start.x;
-        float x2 = a.end.x;
-        float x3 = b.start.x;
-        float x4 = b.end.x;
-
-        float y1 = a.start.y;
-        float y2 = a.end.y;
-        float y3 = b.start.y;
-        float y4 = b.end.y;
-
         float denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
 
         if (denom == 0) return null;

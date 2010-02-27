@@ -106,12 +106,9 @@ public class Engine {
             float currenttime = timer.getTime();
             while ((currenttime - lastdrawtime) < (1 / 80f)) {
                                 
-                
                 // Calculate time
-                Timer.tick();
-                currenttime = timer.getTime();
-                
                 SmoothTimer.tick();
+                currenttime = timer.getTime();
                 float dt = SmoothTimer.getDelta();
                                 
                 if (dt != 0) {

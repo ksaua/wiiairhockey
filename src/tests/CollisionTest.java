@@ -19,8 +19,8 @@ public class CollisionTest {
                 System.out.println("Collision occured" + cr);
             }
         });
-        cs.addEntity(a, new BoundingBox(a, 10, 5));
-        cs.addEntity(b, new BoundingBox(b, 10, 10));
+        cs.addEntity(new BoundingBox(a, 10, 5));
+        cs.addEntity(new BoundingBox(b, 10, 10));
 
         a.increaseRotation(0, (float) (Math.PI / 2), 0);
 
@@ -46,8 +46,8 @@ public class CollisionTest {
                 System.out.println("Collision occured");
             }
         });
-        cs.addEntity(a, new BoundingCircle(a, 5));
-        cs.addEntity(b, new BoundingCircle(b, 5));
+        cs.addEntity(new BoundingCircle(a, 5));
+        cs.addEntity(new BoundingCircle(b, 5));
 
         a.increaseRotation(0, (float) (Math.PI / 2), 0);
 

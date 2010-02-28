@@ -1,5 +1,6 @@
 package engine.collisionsystem2D;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,35 +20,37 @@ public class Collisionsystem implements ChangeListener {
         Bounds bounds;
         boolean dirty; // Has been changed since last check? 
         
-        LinkedList<CollisionEntity> collidesWith;
+//        LinkedList<CollisionEntity> collidesWith;
         
         public CollisionEntity(Entity e, Bounds b) {
-        	collidesWith = new LinkedList<CollisionEntity>();
+//        	collidesWith = new LinkedList<CollisionEntity>();
         	entity = e; bounds = b;
         }
         
-        public boolean didCollideWith(CollisionEntity ce) {
-        	return collidesWith.contains(ce);
-        }
-        
-        public void setCollision(CollisionEntity ce, boolean b) {
-        	if (b) collidesWith.add(ce);
-        	else collidesWith.remove(ce);
-        }
+//        public boolean didCollideWith(CollisionEntity ce) {
+//        	return collidesWith.contains(ce);
+//        }
+//        
+//        public void setCollision(CollisionEntity ce, boolean b) {
+//        	if (b) collidesWith.add(ce);
+//        	else collidesWith.remove(ce);
+//        }
     }
         
-    private HashMap<Entity, CollisionEntity> entities;
+//    private HashMap<Entity, CollisionEntity> entities;
+    private ArrayList<CollisionEntity> entities;
 
     private LinkedList<CollisionHandler> collisionHandlers;
 
     
     public Collisionsystem() {
-        entities = new HashMap<Entity, CollisionEntity>();
+        entities = new ArrayList<CollisionEntity>();
         collisionHandlers = new LinkedList<CollisionHandler>();
     }
     
-    public void addEntity(Entity entity, Bounds bounds) {
-        entities.put(entity, new CollisionEntity(entity, bounds));
+    public void addEntity(Bounds bounds) {
+        Entity entity = bounds.getEntity();
+        entities.add(new CollisionEntity(entity, bounds));
         entity.addSubcription(Entity.POSITION_CHANGED, this);
         entity.addSubcription(Entity.ROTATION_CHANGED, this);
     }
@@ -55,9 +58,15 @@ public class Collisionsystem implements ChangeListener {
     // Entity changed some parameter
     @Override
     public void change(SubscribeableChanges source, int id) {
-        CollisionEntity src = entities.get((Entity) source);
-        src.bounds.update();
-        src.dirty = true;
+        CollisionEntity ce = findCollisionEntity((Entity) source);
+        ce.dirty = true;
+    }
+    
+    private CollisionEntity findCollisionEntity(Entity entity) {
+        for (CollisionEntity ce: entities) {
+            if (ce.entity == entity) return ce;
+        }
+        return null;
     }
     
 
@@ -66,16 +75,12 @@ public class Collisionsystem implements ChangeListener {
     }
     
     public void check() {
-        Collection<CollisionEntity> c = entities.values();
-        
-        CollisionEntity[] ce = new CollisionEntity[c.size()];
-        c.toArray(ce);
-        
-        for (int i = 0; i < ce.length; i++) {
-            for (int j = ce.length - 1; j > i; j--) {
+
+        for (int i = 0; i < entities.size(); i++) {
+            for (int j = entities.size() - 1; j > i; j--) {
                 
-                CollisionEntity e1 = ce[i];
-                CollisionEntity e2 = ce[j];
+                CollisionEntity e1 = entities.get(i);
+                CollisionEntity e2 = entities.get(j);
                 
                 if (e1.dirty || e2.dirty) {
                 	
@@ -98,7 +103,7 @@ public class Collisionsystem implements ChangeListener {
             }  
         }
 
-        for (CollisionEntity tmp: ce) {
+        for (CollisionEntity tmp: entities) {
             tmp.dirty = false;
         }
     }

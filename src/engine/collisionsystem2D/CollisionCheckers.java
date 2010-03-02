@@ -26,8 +26,7 @@ public class CollisionCheckers {
     
     public static CollisionCheckerResponse collides(BoundingCircle circle, BoundingBox box) {
         for (Line line: box.getLines()) {
-            Vector2f pos = new Vector2f(circle.getEntity().getPos().x, circle.getEntity().getPos().z);
-            if (lineIntersectsCircle(line, circle.getRadius(), pos)) {
+            if (lineIntersectsCircle(line, circle.getRadius(), circle.getEntity().getPos().x, circle.getEntity().getPos().z)) {
                 return new CollisionCheckerResponse(true, null, NormalCreator.findNormal(line.end, line.start));
             }
         }
@@ -106,7 +105,7 @@ public class CollisionCheckers {
         return new CollisionCheckerResponse(distance < distance2, null, null);
     }
 
-    private static boolean lineIntersectsCircle(Line line, float radius, Vector2f pos) {
+    private static boolean lineIntersectsCircle(Line line, float radius, float posx, float posy) {
         
         // Check too see if they are even close
         float minx = Math.min(line.start.x, line.end.x) - radius;
@@ -115,7 +114,7 @@ public class CollisionCheckers {
         float miny = Math.min(line.start.y, line.end.y) - radius;
         float maxy = Math.max(line.start.y, line.end.y) + radius;
         
-        if (!(minx < pos.x && pos.x < maxx && miny < pos.y && pos.y < maxy))
+        if (!(minx < posx && posx < maxx && miny < posy && posy < maxy))
             return false;
         
         // Find the distance and see if it is less than radius
@@ -124,17 +123,17 @@ public class CollisionCheckers {
         Vector2f intersection =  Line.lineIntersection(
                 line.start.x, line.start.y,
                 line.end.x, line.end.y,
-                pos.x + normal.x * radius, pos.y + normal.y * radius,
-                pos.x - normal.x * radius, pos.y - normal.y * radius);
+                posx + normal.x * radius, posy + normal.y * radius,
+                posx - normal.x * radius, posy - normal.y * radius);
         
         float radiussq = radius * radius;
         
-        return intersection != null || distanceSquared(pos, line.start) < radiussq || distanceSquared(pos, line.end) < radiussq;
+        return intersection != null || distanceSquared(posx, posy, line.start.x, line.start.y) < radiussq || distanceSquared(posx, posy, line.end.x, line.end.y) < radiussq;
         
     }
     
-    private static float distanceSquared(Vector2f a, Vector2f b) {
-        return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);  
+    private static float distanceSquared(float ax, float ay, float bx, float by) {
+        return (ax - bx) * (ax - bx) + (ay - by) * (ay - by);  
     }
 
     private static boolean polygonContainsVertex(Vector2f[] vertices, Vector2f pos) {

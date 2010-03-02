@@ -4,9 +4,11 @@ import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import engine.Entity;
+import engine.collisionsystem2D.CollisionHandler;
+import engine.collisionsystem2D.CollisionResponse;
 import engine.utils.Line;
 
-public class PuckController implements Controller {
+public class PuckController implements Controller, CollisionHandler {
 
     private Entity puck;
     private Vector3f velocity;
@@ -111,6 +113,15 @@ public class PuckController implements Controller {
         velocity.scale(1 - (0.6f * dt));
 
         puck.move(velocity.x * dt, velocity.y * dt, velocity.z * dt);
+    }
+
+    @Override
+    public void collisionOccured(CollisionResponse cr) {
+        if (cr.getEntity1() instanceof Paddle && cr.getEntity2() == puck) {
+            paddleCollision((Paddle)cr.getEntity1(), cr.getNormal1());
+        } else if (cr.getEntity2() instanceof Paddle && cr.getEntity1() == puck) {
+            paddleCollision((Paddle)cr.getEntity2(), cr.getNormal2());
+        }        
     }
 
 }

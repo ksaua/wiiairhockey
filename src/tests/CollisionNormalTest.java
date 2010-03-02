@@ -54,8 +54,8 @@ public class CollisionNormalTest extends EmptyState implements CollisionHandler 
         Mouse.setCursorPosition(gc.getScreenWidth() / 2, gc.getScreenHeight() / 2);
         
         cs = new Collisionsystem();
-        cs.addEntity(mousemoveable, new BoundingBox(mousemoveable, 100, 100));
-        cs.addEntity(stationary, new BoundingBox(stationary, 50, 50));
+        cs.addEntity(new BoundingBox(mousemoveable, 100, 100));
+        cs.addEntity(new BoundingBox(stationary, 50, 50));
         cs.addCollisionHandler(this);
         
         mousemoveable.move(1, 0, 0);

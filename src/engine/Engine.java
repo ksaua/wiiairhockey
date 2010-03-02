@@ -91,6 +91,8 @@ public class Engine {
 
     GraphicContext graphiccontext = new GraphicContext();
 
+    private static int SLEEPLESS_UPDATES = 500;
+    
     public void loop() {
         Timer timer = new Timer();
         float starttime = timer.getTime();
@@ -101,9 +103,12 @@ public class Engine {
         int updates = 0;
         
         SmoothTimer.amount = 100;
-
+        
+        int sleepless_remaining = SLEEPLESS_UPDATES;
+        
         while (running && !Display.isCloseRequested()) {
             float currenttime = timer.getTime();
+            
             while ((currenttime - lastdrawtime) < (1 / 80f)) {
                                 
                 // Calculate time
@@ -120,6 +125,16 @@ public class Engine {
                     
                     updates++;
                 }
+                
+                if (sleepless_remaining == 0) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    sleepless_remaining = SLEEPLESS_UPDATES;
+                }
+                sleepless_remaining--;
             }
 
             lastdrawtime = timer.getTime();

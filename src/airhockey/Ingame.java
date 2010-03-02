@@ -22,7 +22,7 @@ import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
 import engine.utils.MouseBuffer;
 
-public class Ingame extends EmptyState implements CollisionHandler {
+public class Ingame extends EmptyState {
 
     Engine engine;
 
@@ -50,7 +50,7 @@ public class Ingame extends EmptyState implements CollisionHandler {
     public void init(Engine e, GraphicContext gc) {
         this.engine = e;
 
-        mouseBuffer = new MouseBuffer(20);
+        mouseBuffer = new MouseBuffer(5);
         
         cam = new Camera(-40f, 12f, 0);
         cam.lookAt(0, 0, 0);
@@ -66,18 +66,6 @@ public class Ingame extends EmptyState implements CollisionHandler {
         paddles[0] = new Paddle(-20, 1.5f, 0);
         paddles[1] = new Paddle( 20, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
-        
-        Collisionsystem cs = new Collisionsystem();
-        cs.addCollisionHandler(this);
-        cs.addEntity(paddles[0], new BoundingBox(paddles[0], 2, 10));
-        cs.addEntity(puck, new BoundingCircle(puck, 1));
-        collisionsystems.add(cs);
-        
-        cs = new Collisionsystem();
-        cs.addCollisionHandler(this);
-        cs.addEntity(paddles[1], new BoundingBox(paddles[1], 2, 10));
-        cs.addEntity(puck, new BoundingCircle(puck, 1));
-        collisionsystems.add(cs);
 
         Font font = new Font("Courier New", Font.BOLD, 32);
         ttf = new TrueTypeFont(font, true);
@@ -91,6 +79,22 @@ public class Ingame extends EmptyState implements CollisionHandler {
         paddles[1].setRenderComponent(paddle);
         table.setRenderComponent(MediaLoader.loadObj("table2.obj"));
         puck.setRenderComponent(MediaLoader.loadObj("puck.obj"));
+        
+        BoundingBox bpaddle0 = new BoundingBox(paddles[0], 2, 10);
+        BoundingBox bpaddle1 = new BoundingBox(paddles[1], 2, 10);
+        BoundingCircle bpuck = new BoundingCircle(puck, 1);
+        
+        Collisionsystem cs = new Collisionsystem();
+        cs.addCollisionHandler(puckController);
+        cs.addEntity(bpaddle0);
+        cs.addEntity(bpuck);
+        collisionsystems.add(cs);
+        
+        cs = new Collisionsystem();
+        cs.addCollisionHandler(puckController);
+        cs.addEntity(bpaddle1);
+        cs.addEntity(bpuck);
+        collisionsystems.add(cs);
     }
 
     @Override
@@ -158,15 +162,6 @@ public class Ingame extends EmptyState implements CollisionHandler {
         if (lwjglId == Keyboard.KEY_SPACE) {
             Mouse.setCursorPosition(400, 300);
             paddles[0].setPosition(-15, 1.5f, 0);
-        }
-    }
-
-    @Override
-    public void collisionOccured(CollisionResponse cr) {
-        if (cr.getEntity1() instanceof Paddle && cr.getEntity2() == puck) {
-            puckController.paddleCollision((Paddle)cr.getEntity1(), cr.getNormal1());
-        } else if (cr.getEntity2() instanceof Paddle && cr.getEntity1() == puck) {
-            puckController.paddleCollision((Paddle)cr.getEntity2(), cr.getNormal2());
         }
     }
 }

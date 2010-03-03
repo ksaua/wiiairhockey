@@ -36,17 +36,6 @@ public class Menu extends EmptyState {
 
         background = new Sprite(TextureLoader.loadTexture("menubg.jpg", false));
         mouse = new Sprite(TextureLoader.loadTexture("mouse-red.png", false));
-
-        final Airhockey ah = (Airhockey) e;
-        SimpleMoteFinder smf = new SimpleMoteFinder();
-        smf.findMote(new MoteFinderListener() {
-            @Override
-            public void moteFound(Mote mote) {
-                ah.initializeMote(mote);
-                ah.setMote(0, mote);
-            }
-        }, 30);
-
     }
 
     @Override

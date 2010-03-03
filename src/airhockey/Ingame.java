@@ -1,11 +1,28 @@
 package airhockey;
 
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.LinkedList;
+
+import motej.IrCameraMode;
+import motej.IrCameraSensitivity;
+import motej.IrPoint;
+import motej.Mote;
+import motej.MoteFinder;
+import motej.MoteFinderListener;
+import motej.event.AccelerometerEvent;
+import motej.event.AccelerometerListener;
+import motej.event.CoreButtonEvent;
+import motej.event.CoreButtonListener;
+import motej.event.IrCameraEvent;
+import motej.event.IrCameraListener;
+import motej.request.ReportModeRequest;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.Timer;
+import org.lwjgl.util.vector.Vector2f;
 
 import engine.Camera;
 import engine.EmptyState;
@@ -15,16 +32,15 @@ import engine.GraphicContext;
 import engine.Light;
 import engine.Renderable;
 import engine.TrueTypeFont;
+import engine.Wii.ConsistentIrPoint;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.BoundingCircle;
-import engine.collisionsystem2D.CollisionHandler;
-import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
 import engine.utils.MouseBuffer;
 
-public class Ingame extends EmptyState {
+public class Ingame extends EmptyState implements MoteFinderListener, IrCameraListener, CoreButtonListener {
 
-    Engine engine;
+    Airhockey game;
 
     LinkedList<Collisionsystem> collisionsystems = new LinkedList<Collisionsystem>();
 
@@ -48,7 +64,7 @@ public class Ingame extends EmptyState {
 
     @Override
     public void init(Engine e, GraphicContext gc) {
-        this.engine = e;
+        this.game = (Airhockey)e;
 
         mouseBuffer = new MouseBuffer(5);
         
@@ -95,10 +111,15 @@ public class Ingame extends EmptyState {
         cs.addEntity(bpaddle1);
         cs.addEntity(bpuck);
         collisionsystems.add(cs);
+                
+        finder = MoteFinder.getMoteFinder();
+		finder.addMoteFinderListener(this);
+		finder.startDiscovery();
     }
+    MoteFinder finder;
 
     @Override
-    public void render(Engine e, GraphicContext gc) {
+    public synchronized void render(Engine e, GraphicContext gc) {
         cam.transform();
         table.render();
         paddles[0].render();
@@ -113,8 +134,8 @@ public class Ingame extends EmptyState {
     }
 
     @Override
-    public void update(Engine e, GraphicContext gc, float dt) {
-        paddles[0].move(mouseBuffer.getY() * 0.01f, 0, mouseBuffer.getX() * 0.01f);
+    public synchronized void update(Engine e, GraphicContext gc, float dt) {
+//        paddles[0].move(mouseBuffer.getY() * 0.01f, 0, mouseBuffer.getX() * 0.01f);
         
         for (Collisionsystem cs: collisionsystems)
             cs.check();
@@ -147,7 +168,7 @@ public class Ingame extends EmptyState {
     @Override
     public void keyReleased(int lwjglId, char keyChar) {
         if (lwjglId == Keyboard.KEY_ESCAPE) {
-            engine.setState("menu");
+            game.setState("menu");
         }
 
         if (lwjglId == Keyboard.KEY_A) {
@@ -164,4 +185,95 @@ public class Ingame extends EmptyState {
             paddles[0].setPosition(-15, 1.5f, 0);
         }
     }
+
+	@Override
+	public void moteFound(Mote mote) {
+		System.out.println("doing stuff to mote");
+        mote.setReportMode(ReportModeRequest.DATA_REPORT_0x3e);
+        mote.enableIrCamera(IrCameraMode.FULL, IrCameraSensitivity.INIO);
+        mote.rumble(200);
+        mote.addCoreButtonListener(this);
+        mote.addIrCameraListener(this);
+	}
+	
+//	Timer timer = new Timer();
+//	float lastTime = timer.getTime();
+//	
+//	Vector2f velocity = new Vector2f(0,0); 
+//	
+//	@Override
+//	public void accelerometerChanged(AccelerometerEvent<Mote> ae) {
+//		float now = timer.getTime();
+//		float dt = now - lastTime;
+//		
+//		System.out.println((ae.getX() - 122) + ", " + (ae.getY() - 122));
+//		
+//		if (Math.abs(ae.getX() - 122) > 3)
+//			velocity.x += (ae.getX() - 122) * 0.5f * dt;
+//		if (Math.abs(ae.getY() - 122) > 3)
+//			velocity.y += (ae.getY() - 122) * 0.5f * dt;
+//		
+//		lastTime = now;
+//	}
+
+	ConsistentIrPoint[] points = new ConsistentIrPoint[2];
+	@Override
+	public void irImageChanged(IrCameraEvent ice) {
+		
+		boolean somethingMoved = false;
+		
+		for (int i = 0; i < 2; i++) {
+			IrPoint point = ice.getIrPoint(i);
+			
+			if (point.x == 1023 && point.y == 1023) {
+				points[i] = null;
+			}
+			else if (points[i] == null) {
+				points[i] = new ConsistentIrPoint(point.x, point.y);
+			} else {
+				points[i].moveTo(point.x, point.y);
+				points[i].didmove = true;
+				somethingMoved = true;
+			}
+		}
+		
+		if (somethingMoved)
+			meh();
+		
+		for (int i = 0; i < 2; i++) {
+			if (points[i] != null) points[i].didmove = false;
+		}
+	}
+	
+	private String s(IrPoint p) {
+		return "<" + p.getX() + ", " + p.getY() + ">";
+	}
+	
+	public synchronized void meh() {
+		ConsistentIrPoint cip = points[0] != null ? points[0] : points[1];
+		
+		if (cip != null && cip.didmove) {
+			float dx = cip.oldx - cip.posx;
+			paddles[0].move(0, 0, dx * 0.025f);
+		}
+		
+		if (points[0] != null && points[1] != null &&
+			points[0].didmove && points[1].didmove) {
+			float len1 = (float) Math.sqrt(Math.pow(points[0].posx - points[1].posx, 2) + Math.pow(points[0].posy - points[1].posy, 2));
+			float len2 = (float) Math.sqrt(Math.pow(points[0].oldx - points[1].oldx, 2) + Math.pow(points[0].oldy - points[1].oldy, 2));
+			
+			paddles[0].move(-(len2 - len1) * 0.5f, 0, 0);
+		}
+	}
+
+	@Override
+	public void buttonPressed(CoreButtonEvent arg0) {
+		if (arg0.isButtonHomePressed()) {
+			paddles[0].setPosition(-20, 1.5f, 0);
+		}
+		if (arg0.isButtonPlusPressed()) {
+			puck.setPosition(-10, 2, 0);
+			puckController.resetVelocity();
+		}
+	}
 }

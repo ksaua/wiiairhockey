@@ -11,7 +11,7 @@ public class Paddle extends Entity {
 
 	public Paddle(float posx, float posy, float posz) {
 		super(posx, posy, posz, 0, 0, 0);
-		velocity_generator = new VelocityGenerator(0.01f);
+		velocity_generator = new VelocityGenerator(0.05f);
 	}
 	
 	@Override

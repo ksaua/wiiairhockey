@@ -59,11 +59,11 @@ public class SimpleMoteFinder implements Runnable, MoteFinderListener {
 			log.info("Sleep interrupted");
 		}
 		System.out.println("Stopping discovery");
+//		moteFinderListener.moteFound(mote);
+//		finder.stopDiscovery();
+//		finder.removeMoteFinderListener(this);
 		
-		finder.stopDiscovery();
-		finder.removeMoteFinderListener(this);
-		
-		this.run();
+//		this.run();
 	}
 
 }

@@ -124,4 +124,10 @@ public class PuckController implements Controller, CollisionHandler {
         }        
     }
 
+	public void resetVelocity() {
+		velocity.x = 1f;
+		velocity.y = 0;
+		velocity.z = 0;
+	}
+
 }

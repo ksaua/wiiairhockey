@@ -91,7 +91,7 @@ public class Engine {
 
     GraphicContext graphiccontext = new GraphicContext();
 
-    private static int SLEEPLESS_UPDATES = 500;
+    private static int SLEEPLESS_UPDATES = 1;
     
     public void loop() {
         Timer timer = new Timer();

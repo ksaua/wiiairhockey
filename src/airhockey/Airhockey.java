@@ -11,18 +11,15 @@ public class Airhockey extends Engine {
 		super(title);
 	}
 	
-	public void setMote(int id, Mote mote) {
+	Mote[] mote = new Mote[2];
+	
+	public void setMote(int id, Mote m) {
+		mote[id] = m;
 		System.out.println("setting mote");
 	}
 	
-	public void initializeMote(Mote mote) {
-		mote.setReportMode(ReportModeRequest.DATA_REPORT_0x31);
-
-//		WiiEventCreator wec = new WiiEventCreator();
-//		wec.addListener(this);
-		
-//		mote.addAccelerometerListener(wec);
-//		mote.addCoreButtonListener(wec);
+	public Mote getMote(int id) {
+		return mote[id];
 	}
 
 	public static void main(String[] args) {

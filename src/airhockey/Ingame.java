@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import motej.CalibrationDataReport;
 import motej.IrCameraMode;
 import motej.IrCameraSensitivity;
 import motej.IrPoint;
@@ -33,12 +34,13 @@ import engine.Light;
 import engine.Renderable;
 import engine.TrueTypeFont;
 import engine.Wii.ConsistentIrPoint;
+import engine.Wii.Kalman;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.BoundingCircle;
 import engine.collisionsystem2D.Collisionsystem;
 import engine.utils.MouseBuffer;
 
-public class Ingame extends EmptyState implements MoteFinderListener, IrCameraListener, CoreButtonListener {
+public class Ingame extends EmptyState implements MoteFinderListener, IrCameraListener, CoreButtonListener, AccelerometerListener<Mote> {
 
     Airhockey game;
 
@@ -66,7 +68,7 @@ public class Ingame extends EmptyState implements MoteFinderListener, IrCameraLi
     public void init(Engine e, GraphicContext gc) {
         this.game = (Airhockey)e;
 
-        mouseBuffer = new MouseBuffer(5);
+        mouseBuffer = new MouseBuffer(10);
         
         cam = new Camera(-40f, 12f, 0);
         cam.lookAt(0, 0, 0);
@@ -135,7 +137,7 @@ public class Ingame extends EmptyState implements MoteFinderListener, IrCameraLi
 
     @Override
     public synchronized void update(Engine e, GraphicContext gc, float dt) {
-//        paddles[0].move(mouseBuffer.getY() * 0.01f, 0, mouseBuffer.getX() * 0.01f);
+        paddles[0].move(mouseBuffer.getY() * 0.01f, 0, mouseBuffer.getX() * 0.01f);
         
         for (Collisionsystem cs: collisionsystems)
             cs.check();
@@ -189,9 +191,33 @@ public class Ingame extends EmptyState implements MoteFinderListener, IrCameraLi
 	@Override
 	public void moteFound(Mote mote) {
 		System.out.println("doing stuff to mote");
+		while (mote.getStatusInformationReport() == null) {
+			System.out.println("waiting for status information report");
+			try {
+				Thread.sleep(10l);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		System.out.println(mote.getStatusInformationReport());
+		
+		while (mote.getCalibrationDataReport() == null) {
+			System.out.println("waiting for calibration data report");
+			try {
+				Thread.sleep(10l);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		CalibrationDataReport cali = mote.getCalibrationDataReport();
+		zeroX = cali.getZeroX();
+		gravX = cali.getGravityX();
         mote.setReportMode(ReportModeRequest.DATA_REPORT_0x3e);
         mote.enableIrCamera(IrCameraMode.FULL, IrCameraSensitivity.INIO);
         mote.rumble(200);
+        mote.addAccelerometerListener(this);
         mote.addCoreButtonListener(this);
         mote.addIrCameraListener(this);
 	}
@@ -270,10 +296,23 @@ public class Ingame extends EmptyState implements MoteFinderListener, IrCameraLi
 	public void buttonPressed(CoreButtonEvent arg0) {
 		if (arg0.isButtonHomePressed()) {
 			paddles[0].setPosition(-20, 1.5f, 0);
+			kalman.reset();
 		}
 		if (arg0.isButtonPlusPressed()) {
 			puck.setPosition(-10, 2, 0);
 			puckController.resetVelocity();
 		}
+	}
+	private Kalman kalman = new Kalman();
+	float zeroX;
+	float gravX;
+	@Override
+	public synchronized void accelerometerChanged(AccelerometerEvent<Mote> ae) {
+		
+		System.out.println(ae.getX() +", "+ ae.getZ());
+//		if (Math.abs(ae.getX() - zeroX) > 2)
+			paddles[0].setPosition(-20f, 1.5f, kalman.pushAccel(ae.getX() - zeroX) * 10f);
+//		else
+//			kalman.zeroVelocity();
 	}
 }

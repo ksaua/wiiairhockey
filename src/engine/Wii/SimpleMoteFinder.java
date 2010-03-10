@@ -1,7 +1,5 @@
 package engine.Wii;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import motej.Mote;
 import motej.MoteFinder;
@@ -9,7 +7,6 @@ import motej.MoteFinderListener;
 
 public class SimpleMoteFinder implements Runnable, MoteFinderListener {
 
-	private Logger log = LoggerFactory.getLogger(SimpleMoteFinder.class);
 	private MoteFinder finder;
 	private Object lock = new Object();
 	private int timeout;
@@ -17,7 +14,7 @@ public class SimpleMoteFinder implements Runnable, MoteFinderListener {
 	private MoteFinderListener moteFinderListener;
 
 	public void moteFound(Mote mote) {
-		log.info("SimpleMoteFinder received notification of a found mote.");
+		System.out.println("SimpleMoteFinder received notification of a found mote.");
 		moteFinderListener.moteFound(mote);
 		runningThread.interrupt();
 	}
@@ -56,7 +53,7 @@ public class SimpleMoteFinder implements Runnable, MoteFinderListener {
 		try {
 			Thread.sleep(timeout * 1000);
 		} catch (InterruptedException e) {
-			log.info("Sleep interrupted");
+			System.out.println("Sleep interrupted");
 		}
 		System.out.println("Stopping discovery");
 //		moteFinderListener.moteFound(mote);

@@ -40,7 +40,7 @@ import engine.collisionsystem2D.BoundingCircle;
 import engine.collisionsystem2D.Collisionsystem;
 import engine.utils.MouseBuffer;
 
-public class Ingame extends EmptyState implements MoteFinderListener, IrCameraListener, CoreButtonListener, AccelerometerListener<Mote> {
+public class Ingame extends EmptyState implements MoteFinderListener, CoreButtonListener {
 
     Airhockey game;
 
@@ -190,36 +190,17 @@ public class Ingame extends EmptyState implements MoteFinderListener, IrCameraLi
 
 	@Override
 	public void moteFound(Mote mote) {
-		System.out.println("doing stuff to mote");
-		while (mote.getStatusInformationReport() == null) {
-			System.out.println("waiting for status information report");
-			try {
-				Thread.sleep(10l);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		new WiiPaddleController(mote, paddles[0]);
+		mote.addCoreButtonListener(this);
+		finder.stopDiscovery();
+	}
+
+	@Override
+	public void buttonPressed(CoreButtonEvent evt) {
+		if (evt.isButtonPlusPressed()) {
+			puck.setPosition(-10, 2, 0);
+			puckController.resetVelocity();
 		}
-		System.out.println(mote.getStatusInformationReport());
-		
-		while (mote.getCalibrationDataReport() == null) {
-			System.out.println("waiting for calibration data report");
-			try {
-				Thread.sleep(10l);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		CalibrationDataReport cali = mote.getCalibrationDataReport();
-		zeroX = cali.getZeroX();
-		gravX = cali.getGravityX();
-        mote.setReportMode(ReportModeRequest.DATA_REPORT_0x3e);
-        mote.enableIrCamera(IrCameraMode.FULL, IrCameraSensitivity.INIO);
-        mote.rumble(200);
-        mote.addAccelerometerListener(this);
-        mote.addCoreButtonListener(this);
-        mote.addIrCameraListener(this);
 	}
 	
 //	Timer timer = new Timer();
@@ -241,78 +222,4 @@ public class Ingame extends EmptyState implements MoteFinderListener, IrCameraLi
 //		
 //		lastTime = now;
 //	}
-
-	ConsistentIrPoint[] points = new ConsistentIrPoint[2];
-	@Override
-	public void irImageChanged(IrCameraEvent ice) {
-		
-		boolean somethingMoved = false;
-		
-		for (int i = 0; i < 2; i++) {
-			IrPoint point = ice.getIrPoint(i);
-			
-			if (point.x == 1023 && point.y == 1023) {
-				points[i] = null;
-			}
-			else if (points[i] == null) {
-				points[i] = new ConsistentIrPoint(point.x, point.y);
-			} else {
-				points[i].moveTo(point.x, point.y);
-				points[i].didmove = true;
-				somethingMoved = true;
-			}
-		}
-		
-		if (somethingMoved)
-			meh();
-		
-		for (int i = 0; i < 2; i++) {
-			if (points[i] != null) points[i].didmove = false;
-		}
-	}
-	
-	private String s(IrPoint p) {
-		return "<" + p.getX() + ", " + p.getY() + ">";
-	}
-	
-	public synchronized void meh() {
-		ConsistentIrPoint cip = points[0] != null ? points[0] : points[1];
-		
-		if (cip != null && cip.didmove) {
-			float dx = cip.oldx - cip.posx;
-			paddles[0].move(0, 0, dx * 0.025f);
-		}
-		
-		if (points[0] != null && points[1] != null &&
-			points[0].didmove && points[1].didmove) {
-			float len1 = (float) Math.sqrt(Math.pow(points[0].posx - points[1].posx, 2) + Math.pow(points[0].posy - points[1].posy, 2));
-			float len2 = (float) Math.sqrt(Math.pow(points[0].oldx - points[1].oldx, 2) + Math.pow(points[0].oldy - points[1].oldy, 2));
-			
-			paddles[0].move(-(len2 - len1) * 0.5f, 0, 0);
-		}
-	}
-
-	@Override
-	public void buttonPressed(CoreButtonEvent arg0) {
-		if (arg0.isButtonHomePressed()) {
-			paddles[0].setPosition(-20, 1.5f, 0);
-			kalman.reset();
-		}
-		if (arg0.isButtonPlusPressed()) {
-			puck.setPosition(-10, 2, 0);
-			puckController.resetVelocity();
-		}
-	}
-	private Kalman kalman = new Kalman();
-	float zeroX;
-	float gravX;
-	@Override
-	public synchronized void accelerometerChanged(AccelerometerEvent<Mote> ae) {
-		
-		System.out.println(ae.getX() +", "+ ae.getZ());
-//		if (Math.abs(ae.getX() - zeroX) > 2)
-			paddles[0].setPosition(-20f, 1.5f, kalman.pushAccel(ae.getX() - zeroX) * 10f);
-//		else
-//			kalman.zeroVelocity();
-	}
 }

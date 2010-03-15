@@ -20,6 +20,10 @@ public class Paddle extends Entity {
 		velocity_generator.push_pos(pos);
 	}
 	
+	public void setYaw(float y) {
+	    rot.y = y;
+	}
+	
 	public Vector3f getVelocity() {
 		return velocity_generator.getVelocity();
 	}

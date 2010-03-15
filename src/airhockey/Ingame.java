@@ -81,8 +81,8 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         light.setDiffuse(0.8f, 0.8f, 0.8f, 0);
 
         table = new Entity(0,0,0);
-        paddles[0] = new Paddle(-20, 1.5f, 0);
-        paddles[1] = new Paddle( 20, 1.5f, 0);
+        paddles[0] = new Paddle(-24, 1.5f, 0);
+        paddles[1] = new Paddle( 24, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
 
         Font font = new Font("Courier New", Font.BOLD, 32);

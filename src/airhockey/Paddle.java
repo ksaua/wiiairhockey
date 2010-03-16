@@ -27,4 +27,12 @@ public class Paddle extends Entity {
 	public Vector3f getVelocity() {
 		return velocity_generator.getVelocity();
 	}
+
+    public void setX(float x) {
+        this.pos.x = x;
+    }
+    
+    public void setZ(float z) {
+        this.pos.z = z;
+    }
 }

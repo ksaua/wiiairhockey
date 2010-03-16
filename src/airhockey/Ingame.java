@@ -37,6 +37,8 @@ import engine.Wii.ConsistentIrPoint;
 import engine.Wii.Kalman;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.BoundingCircle;
+import engine.collisionsystem2D.CollisionHandler;
+import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
 import engine.utils.MouseBuffer;
 
@@ -46,7 +48,8 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
 
     LinkedList<Collisionsystem> collisionsystems = new LinkedList<Collisionsystem>();
 
-    TrueTypeFont ttf;
+    TrueTypeFont ttf18;
+    TrueTypeFont ttf32;
 
     LinkedList<Controller> controllers = new LinkedList<Controller>();
 
@@ -59,6 +62,8 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
     Camera cam;
     
     MouseBuffer mouseBuffer;
+    
+    boolean calibrating;
 
     int[] scores = new int[2];
 
@@ -85,8 +90,8 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         paddles[1] = new Paddle( 24, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
 
-        Font font = new Font("Courier New", Font.BOLD, 32);
-        ttf = new TrueTypeFont(font, true);
+        ttf18 = new TrueTypeFont(new Font("Courier New", Font.BOLD, 18), true);
+        ttf32 = new TrueTypeFont(new Font("Courier New", Font.BOLD, 32), true);
 
         puckController = new PuckController(puck);
         controllers.add(puckController);
@@ -113,6 +118,32 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         cs.addEntity(bpaddle1);
         cs.addEntity(bpuck);
         collisionsystems.add(cs);
+        
+        // Score changing
+        final BoundingBox bscore0 = new BoundingBox(new Entity(-28.5f, 1.5f, 0), 2, 10);
+        final BoundingBox bscore1 = new BoundingBox(new Entity(28.5f, 1.5f, 0), 2, 10);
+        CollisionHandler scoreChanger = new CollisionHandler() {
+            @Override
+            public void collisionOccured(CollisionResponse cr) {
+                if (cr.getEntity1() == bscore0.getEntity() || cr.getEntity2() == bscore0.getEntity()) {
+                    scores[0]++;
+                } else {
+                    scores[1]++;
+                }
+                resetPuck();
+            }
+        };
+        cs = new Collisionsystem();
+        cs.addEntity(bpuck);
+        cs.addEntity(bscore0);
+        cs.addCollisionHandler(scoreChanger);
+        collisionsystems.add(cs);
+        
+        cs = new Collisionsystem();
+        cs.addEntity(bpuck);
+        cs.addEntity(bscore1);
+        cs.addCollisionHandler(scoreChanger);
+        collisionsystems.add(cs);
                 
         finder = MoteFinder.getMoteFinder();
 		finder.addMoteFinderListener(this);
@@ -129,10 +160,17 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         puck.render();
 
         gc.start2dDrawing();
-        ttf.drawString(gc.getScreenWidth() / 2, gc.getScreenHeight() - 40, String.valueOf(scores[0] + " - " + scores[1]), 1, 1, TrueTypeFont.ALIGN_CENTER);
+        ttf32.drawString(gc.getScreenWidth() / 2, gc.getScreenHeight() - 40, String.valueOf(scores[0] + " - " + scores[1]), 1, 1, TrueTypeFont.ALIGN_CENTER);
 
         //        ttf.drawString(20, gc.getScreenHeight() - 60, String.valueOf(puck_velocity.x), 1, 1, TrueTypeFont.ALIGN_LEFT);
-        ttf.drawString(20, gc.getScreenHeight() - 60, String.valueOf(paddles[0].getVelocity().x), 1, 1, TrueTypeFont.ALIGN_LEFT);
+        
+        ttf18.drawString(5, gc.getScreenHeight() - 22, "Trykk Home for å resette puck", 1, 1, TrueTypeFont.ALIGN_LEFT);
+        if (!calibrating) {
+            ttf18.drawString(5, gc.getScreenHeight() - 42, "Hold A for å kalibrere", 1, 1, TrueTypeFont.ALIGN_LEFT);
+        } else {
+            ttf18.drawString(5, gc.getScreenHeight() - 42, "Pek kontrollen direkte mot lysene", 1, 1, TrueTypeFont.ALIGN_LEFT);
+            ttf18.drawString(5, gc.getScreenHeight() - 62, "Få klossen til å stå i midten og slipp A", 1, 1, TrueTypeFont.ALIGN_LEFT);
+        }
     }
 
     @Override
@@ -172,6 +210,10 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         if (lwjglId == Keyboard.KEY_ESCAPE) {
             game.setState("menu");
         }
+        
+        if (lwjglId == Keyboard.KEY_SPACE) {
+            System.out.println(paddles[0].getPos());
+        }
 
         if (lwjglId == Keyboard.KEY_A) {
         	paddles[0].increaseRotation(0,-0.1f, 0);
@@ -187,19 +229,26 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
             paddles[0].setPosition(-15, 1.5f, 0);
         }
     }
+    
+    public void resetPuck() {
+        puck.setPosition(-10, 2, 0);
+        puckController.resetVelocity();
+    }
 
 	@Override
 	public void moteFound(Mote mote) {
-		new WiiPaddleController(mote, paddles[0]);
+	    PaddlePositionBuffer ppb = new PaddlePositionBuffer(paddles[0], 60, 40, 12f);
+	    controllers.add(ppb);
+		new WiiPaddleController(mote, ppb);
 		mote.addCoreButtonListener(this);
 		finder.stopDiscovery();
 	}
 
 	@Override
 	public void buttonPressed(CoreButtonEvent evt) {
-		if (evt.isButtonPlusPressed()) {
-			puck.setPosition(-10, 2, 0);
-			puckController.resetVelocity();
+		calibrating = evt.isButtonAPressed();
+		if (evt.isButtonHomePressed()) {
+		    resetPuck();
 		}
 	}
 	

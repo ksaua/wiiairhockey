@@ -23,7 +23,8 @@ import motejx.extensions.motionplus.MotionPlusListener;
 
 public class WiiPaddleController implements IrCameraListener, CoreButtonListener, AccelerometerListener<Mote>, ExtensionListener, MotionPlusListener {
 
-	private Paddle paddle;
+//	private Paddle paddle;
+    private PaddlePositionBuffer pos_buffer;
 	
 //	private Kalman kalman = new Kalman();
 	
@@ -37,16 +38,15 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
 	
 	private boolean calibrate;
 	
-	public WiiPaddleController(Mote mote, Paddle paddle) {
-		this.paddle = paddle;
-
+	public WiiPaddleController(Mote mote, PaddlePositionBuffer pb) {
+	    pos_buffer = pb;
+	    
 		System.out.println("doing stuff to mote");
 		while (mote.getStatusInformationReport() == null) {
 			System.out.println("waiting for status information report");
 			try {
 				Thread.sleep(10l);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -81,7 +81,8 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
 	    IrPoint[] points = new IrPoint[2];
 	    for (int i = 0; i < 2; i++) points[i] = ice.getIrPoint(i);
 	    
-	    if (!(points[0] == null || points[1] == null || 
+	    if (!(points[0] == null || points[1] == null ||
+	            lastPoints[0] == null || lastPoints[1] == null ||
 	            points[0].x == 1023 || points[0].y == 1023 ||
 	            points[1].x == 1023 || points[1].y == 1023)) {
 	        
@@ -152,13 +153,16 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
 	            
 //	            System.out.println(dist1 + " " + dist2);
 //	            paddle.setPosition((float)(-24 + 0.6 * (dist2 - dist1)), 1.5f, paddle.getPos().z);
-	            System.out.println(dist + ", " + calibdist);
-	            paddle.setPosition((float)(-24 + 200 * (dist - calibdist)), 1.5f, paddle.getPos().z);
+//	            System.out.println(dist + ", " + calibdist);
+	            pos_buffer.goToX((float)(-24 + 200 * (dist - calibdist)));
+//	            paddle.setPosition(, 1.5f, paddle.getPos().z);
 	        }
 	        float pos = (posa + posb) / 2 + yawTranslate;
 //	        System.out.println(yaw + ", " + yawTranslate);
-	        paddle.setPosition(paddle.getPos().x, 1.5f, pos * 15f);
-	        paddle.setYaw((float) -Math.toRadians(yaw) * 2);
+	        pos_buffer.goToZ(pos * 15f);
+//	        paddle.setPosition(paddle.getPos().x, 1.5f, pos * 15f);
+	        pos_buffer.goToYaw((float) -Math.toRadians(yaw) * 2);
+//	        paddle.setYaw((float) -Math.toRadians(yaw) * 2);
 	    }
 	    lastPoints[0] = points[0];
 	    lastPoints[1] = points[1];
@@ -175,19 +179,13 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
             MotionPlus mp = evt.getSource().getExtension();
             mp.newCalibration();
         }
-		if (evt.isButtonHomePressed()) {
-			synchronized (paddle) {
-				paddle.setPosition(-24, 1.5f, 0);
-//				kalman.reset();
-			}
-		}
 	}
 
 	@Override
 	public void accelerometerChanged(AccelerometerEvent<Mote> ae) {
-		synchronized (paddle) {
+//		synchronized (pos_buffer) {
 //			paddle.setPosition(-20f, 1.5f, kalman.pushAccel(ae.getX() - zeroX) * 10f);
-		}
+//		}
 	}
 
 	@Override

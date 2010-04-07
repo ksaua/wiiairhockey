@@ -1,29 +1,17 @@
 package airhockey;
 
 import java.awt.Font;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
-import motej.CalibrationDataReport;
-import motej.IrCameraMode;
-import motej.IrCameraSensitivity;
-import motej.IrPoint;
 import motej.Mote;
 import motej.MoteFinder;
 import motej.MoteFinderListener;
-import motej.event.AccelerometerEvent;
-import motej.event.AccelerometerListener;
 import motej.event.CoreButtonEvent;
 import motej.event.CoreButtonListener;
-import motej.event.IrCameraEvent;
-import motej.event.IrCameraListener;
-import motej.request.ReportModeRequest;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.Timer;
-import org.lwjgl.util.vector.Vector2f;
 
 import engine.Camera;
 import engine.EmptyState;
@@ -33,13 +21,13 @@ import engine.GraphicContext;
 import engine.Light;
 import engine.Renderable;
 import engine.TrueTypeFont;
-import engine.Wii.ConsistentIrPoint;
-import engine.Wii.Kalman;
 import engine.collisionsystem2D.BoundingBox;
 import engine.collisionsystem2D.BoundingCircle;
 import engine.collisionsystem2D.CollisionHandler;
 import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
+import engine.gui.GuiContext;
+import engine.gui.GuiText;
 import engine.utils.MouseBuffer;
 
 public class Ingame extends EmptyState implements MoteFinderListener, CoreButtonListener {
@@ -47,9 +35,6 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
     Airhockey game;
 
     LinkedList<Collisionsystem> collisionsystems = new LinkedList<Collisionsystem>();
-
-    TrueTypeFont ttf18;
-    TrueTypeFont ttf32;
 
     LinkedList<Controller> controllers = new LinkedList<Controller>();
 
@@ -66,20 +51,20 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
     boolean calibrating;
 
     int[] scores = new int[2];
-
-//    Vector3f puck_velocity = new Vector3f();
+    
+    GuiContext guicontext = new GuiContext();
+    GuiText textHoldA, textPointController, textPaddleMiddle, textScores;
 
     @Override
     public void init(Engine e, GraphicContext gc) {
         this.game = (Airhockey)e;
+        
+        GuiText.defaultFont = new TrueTypeFont(new Font("Courier New", Font.BOLD, 18), true);
 
         mouseBuffer = new MouseBuffer(10);
         
         cam = new Camera(-40f, 12f, 0);
         cam.lookAt(0, 0, 0);
-        //		GL11.glEnable(GL11.GL_LIGHTING);
-        //		GL11.glEnable(GL11.GL_COLOR_MATERIAL);
-        //		GL11.glColorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
 
         Light light = new Light(GL11.GL_LIGHT0, true, Light.POSITIONAL, 0, 2, 0);
         light.setAmbient(0.5f, 0.5f, 0.5f, 0);
@@ -89,9 +74,6 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         paddles[0] = new Paddle(-24, 1.5f, 0);
         paddles[1] = new Paddle( 24, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
-
-        ttf18 = new TrueTypeFont(new Font("Courier New", Font.BOLD, 18), true);
-        ttf32 = new TrueTypeFont(new Font("Courier New", Font.BOLD, 32), true);
 
         puckController = new PuckController(puck);
         controllers.add(puckController);
@@ -130,6 +112,7 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
                 } else {
                     scores[1]++;
                 }
+                textScores.setText(scores[0] + " - " + scores[1]);
                 resetPuck();
             }
         };
@@ -144,6 +127,29 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         cs.addEntity(bscore1);
         cs.addCollisionHandler(scoreChanger);
         collisionsystems.add(cs);
+        
+        
+        // Add the GUI text
+        
+        textScores = new GuiText(
+                "0 - 0", 
+                new TrueTypeFont(new Font("Courier New", Font.BOLD, 32), true),
+                gc.getScreenWidth() / 2, gc.getScreenHeight() - 40,
+                TrueTypeFont.ALIGN_CENTER);
+        
+        textHoldA = new GuiText(
+                "Hold A for å kalibrere",
+                5, gc.getScreenHeight() - 42);
+        textPointController = new GuiText(
+                "Pek kontrollen direkte mot lysene",
+                5, gc.getScreenHeight() - 42);
+        textPaddleMiddle = new GuiText(
+                "Få klossen til å stå i midten og slipp A",
+                5, gc.getScreenHeight() - 62);
+        
+        guicontext.addGuiElement(textHoldA);
+        guicontext.addGuiElement(textScores);
+
                 
         finder = MoteFinder.getMoteFinder();
 		finder.addMoteFinderListener(this);
@@ -158,19 +164,9 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         paddles[0].render();
         paddles[1].render();
         puck.render();
-
-        gc.start2dDrawing();
-        ttf32.drawString(gc.getScreenWidth() / 2, gc.getScreenHeight() - 40, String.valueOf(scores[0] + " - " + scores[1]), 1, 1, TrueTypeFont.ALIGN_CENTER);
-
-        //        ttf.drawString(20, gc.getScreenHeight() - 60, String.valueOf(puck_velocity.x), 1, 1, TrueTypeFont.ALIGN_LEFT);
         
-        ttf18.drawString(5, gc.getScreenHeight() - 22, "Trykk Home for å resette puck", 1, 1, TrueTypeFont.ALIGN_LEFT);
-        if (!calibrating) {
-            ttf18.drawString(5, gc.getScreenHeight() - 42, "Hold A for å kalibrere", 1, 1, TrueTypeFont.ALIGN_LEFT);
-        } else {
-            ttf18.drawString(5, gc.getScreenHeight() - 42, "Pek kontrollen direkte mot lysene", 1, 1, TrueTypeFont.ALIGN_LEFT);
-            ttf18.drawString(5, gc.getScreenHeight() - 62, "Få klossen til å stå i midten og slipp A", 1, 1, TrueTypeFont.ALIGN_LEFT);
-        }
+        gc.start2dDrawing();
+        guicontext.render(e, gc);
     }
 
     @Override
@@ -201,8 +197,17 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
 
     @Override
     public void mouseButtonPressed(int x, int y, int button) {
-        if (button == 0 || button == 1)
-            scores[button]++;
+        calibrating = !calibrating;
+        
+        if (!calibrating) {
+            guicontext.addGuiElement(textHoldA);
+            guicontext.removeGuiElement(textPointController);
+            guicontext.removeGuiElement(textPaddleMiddle);
+        } else {
+            guicontext.addGuiElement(textPointController);
+            guicontext.addGuiElement(textPaddleMiddle);
+            guicontext.removeGuiElement(textHoldA);
+        }
     }
 
     @Override
@@ -246,29 +251,21 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
 
 	@Override
 	public void buttonPressed(CoreButtonEvent evt) {
-		calibrating = evt.isButtonAPressed();
+	    if (evt.isButtonAPressed() != calibrating) {
+	        calibrating = !calibrating;
+	        
+	        if (!calibrating) {
+	            guicontext.addGuiElement(textHoldA);
+	            guicontext.removeGuiElement(textPointController);
+	            guicontext.removeGuiElement(textPaddleMiddle);
+	        } else {
+	            guicontext.addGuiElement(textPointController);
+	            guicontext.addGuiElement(textPaddleMiddle);
+	            guicontext.removeGuiElement(textHoldA);
+	        }
+	    }
 		if (evt.isButtonHomePressed()) {
 		    resetPuck();
 		}
 	}
-	
-//	Timer timer = new Timer();
-//	float lastTime = timer.getTime();
-//	
-//	Vector2f velocity = new Vector2f(0,0); 
-//	
-//	@Override
-//	public void accelerometerChanged(AccelerometerEvent<Mote> ae) {
-//		float now = timer.getTime();
-//		float dt = now - lastTime;
-//		
-//		System.out.println((ae.getX() - 122) + ", " + (ae.getY() - 122));
-//		
-//		if (Math.abs(ae.getX() - 122) > 3)
-//			velocity.x += (ae.getX() - 122) * 0.5f * dt;
-//		if (Math.abs(ae.getY() - 122) > 3)
-//			velocity.y += (ae.getY() - 122) * 0.5f * dt;
-//		
-//		lastTime = now;
-//	}
 }

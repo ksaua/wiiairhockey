@@ -2,9 +2,7 @@ package airhockey;
 
 
 import motej.Mote;
-import motej.request.ReportModeRequest;
 import engine.Engine;
-import engine.Wii.WiiEventCreator;
 
 public class Airhockey extends Engine {
 	public Airhockey(String title) {

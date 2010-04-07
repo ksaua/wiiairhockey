@@ -119,6 +119,7 @@ public class TrueTypeFont {
 		g.setFont(font);
 		fontMetrics = g.getFontMetrics();
 		int charwidth = fontMetrics.charWidth(ch)+8;
+//		System.out.println(fontMetrics.charWidth(ch));
 
 		if (charwidth <= 0) {
 			charwidth = 7;
@@ -264,7 +265,7 @@ public class TrueTypeFont {
 			if( intObject != null )
 				totalwidth += intObject.width;
 		}
-		return totalwidth;
+		return totalwidth - 8 * whatchars.length();
 	}
 
 	public int getHeight() {
@@ -386,6 +387,7 @@ public class TrueTypeFont {
 			}
 		}
 		GL11.glEnd();
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
 	}
 	public static int loadImage(BufferedImage bufferedImage) {
 	    try {

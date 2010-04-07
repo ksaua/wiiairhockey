@@ -185,4 +185,8 @@ public class Engine {
         kec.addKeyboardListener(newstate);
         mec.addMouseListener(newstate);
     }
+    
+    public void quit() {
+        running = false;
+    }
 }

@@ -1,15 +1,21 @@
 package engine.utils;
 
-public class MouseBuffer {
+import airhockey.Paddle;
+import airhockey.Updateable;
+
+public class MouseBuffer implements Updateable {
 
     private float maxPrGet;
         
     private float xbuffer;
 
     private float ybuffer;
+
+    private Paddle paddle;
     
-    public MouseBuffer(float maxPrGet) {
+    public MouseBuffer(Paddle paddle, float maxPrGet) {
         this.maxPrGet = maxPrGet;
+        this.paddle = paddle;
     }
     
     public void pushMove(int dx, int dy) {
@@ -39,6 +45,16 @@ public class MouseBuffer {
             ybuffer = 0;
             return y;
         }
+    }
+
+    @Override
+    public void update(float dt) {
+        if (paddle != null)
+            paddle.move(getY() * 0.01f, 0, getX() * 0.01f);        
+    }
+    
+    public void setPaddle(Paddle paddle) {
+        this.paddle = paddle;
     }
     
 }

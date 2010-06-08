@@ -8,7 +8,6 @@ import motej.MoteFinderListener;
 public class SimpleMoteFinder implements Runnable, MoteFinderListener {
 
 	private MoteFinder finder;
-	private Object lock = new Object();
 	private int timeout;
 	private Thread runningThread;
 	private MoteFinderListener moteFinderListener;

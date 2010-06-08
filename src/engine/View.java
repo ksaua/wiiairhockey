@@ -13,6 +13,10 @@ public class View {
     private int width;
     private int height;
     
+    // OpenGL width and heights
+    private int owidth;
+    private int oheight;
+    
     private int posx;
     private int posy;
     
@@ -30,6 +34,8 @@ public class View {
     public void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+        this.owidth = nextPow2(width);
+        this.oheight = nextPow2(height);
         
         texId = generateTexture();
         int rboId = generateRenderBuffer();
@@ -39,7 +45,7 @@ public class View {
     public void preRender() {
         EXTFramebufferObject.glBindFramebufferEXT( EXTFramebufferObject.GL_FRAMEBUFFER_EXT, fboId );
         GL11.glPushAttrib(GL11.GL_VIEWPORT_BIT);
-        GL11.glViewport( 0, 0, width, height);
+        GL11.glViewport( 0, 0, owidth, oheight);
         GL11.glClearColor(1, 1, 1, 1);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT |  GL11.GL_DEPTH_BUFFER_BIT );
         
@@ -115,6 +121,7 @@ public class View {
             default:
                 throw new RuntimeException( "Unexpected reply from glCheckFramebufferStatusEXT: " + framebuffer );
         }
+        EXTFramebufferObject.glBindFramebufferEXT(  EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0 ); 
         return fid;
     }
     
@@ -131,7 +138,8 @@ public class View {
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL14.GL_GENERATE_MIPMAP, GL11.GL_TRUE); // automatic mipmap
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB8,  width, height, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, BufferUtils.createByteBuffer(width * height * 3));
+//        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB8,  width, height, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, BufferUtils.createByteBuffer(width * height * 3));
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB8,  owidth, oheight, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, BufferUtils.createByteBuffer(owidth * oheight * 3));
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         
@@ -142,8 +150,10 @@ public class View {
         IntBuffer rboId = BufferUtils.createIntBuffer(1);
         EXTFramebufferObject.glGenRenderbuffersEXT(rboId);
         EXTFramebufferObject.glBindRenderbufferEXT(EXTFramebufferObject.GL_RENDERBUFFER_EXT, rboId.get(0));
+//        EXTFramebufferObject.glRenderbufferStorageEXT(EXTFramebufferObject.GL_RENDERBUFFER_EXT, GL11.GL_DEPTH_COMPONENT,
+//                                 width, height);
         EXTFramebufferObject.glRenderbufferStorageEXT(EXTFramebufferObject.GL_RENDERBUFFER_EXT, GL11.GL_DEPTH_COMPONENT,
-                                 width, height);
+                                   owidth, oheight);
         EXTFramebufferObject.glBindRenderbufferEXT(EXTFramebufferObject.GL_RENDERBUFFER_EXT, 0);
         
         return rboId.get(0);
@@ -151,5 +161,12 @@ public class View {
 
     public void setCamera(Camera camera) {
         this.camera = camera;
+    }
+    
+    
+    private static int nextPow2(int x) {
+        int i = 2;
+        while (x > i) i *= 2;
+        return i;
     }
 }

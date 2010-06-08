@@ -1,6 +1,5 @@
 package tests;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -8,7 +7,6 @@ import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
-import org.lwjgl.opengl.GLContext;
 
 import engine.EmptyState;
 import engine.Engine;
@@ -35,7 +33,7 @@ public class FBOTest extends EmptyState {
         GL11.glGenTextures(textures);
         
         texId = textures.get(0);
-        eh.textureId = texId;
+//        eh.textureId = texId;
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, texId);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
@@ -59,7 +57,7 @@ public class FBOTest extends EmptyState {
         EXTFramebufferObject.glBindRenderbufferEXT(EXTFramebufferObject.GL_RENDERBUFFER_EXT, 0);
         
         
-        boolean FBOEnabled = GLContext.getCapabilities().GL_EXT_framebuffer_object;
+//        boolean FBOEnabled = GLContext.getCapabilities().GL_EXT_framebuffer_object;
         IntBuffer buffer = BufferUtils.createIntBuffer(1);
         EXTFramebufferObject.glGenFramebuffersEXT( buffer ); // generate 
         fobId = buffer.get(0);

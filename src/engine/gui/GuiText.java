@@ -1,11 +1,12 @@
 package engine.gui;
 
-import engine.Renderable;
 import engine.TrueTypeFont;
 
 public class GuiText extends GuiElement {
     
     public static TrueTypeFont defaultFont = null;
+    
+    protected boolean enabled;
     
     private TrueTypeFont font;
     private String text;
@@ -24,6 +25,7 @@ public class GuiText extends GuiElement {
         this.text = text;
         this.font = font;
         this.anchor = anchor;
+        this.enabled = true;
     }
     
     public String getText() {
@@ -34,14 +36,24 @@ public class GuiText extends GuiElement {
         this.text = text;
     }
     
-    private TrueTypeFont getFont() {
+    public void setFont(TrueTypeFont font) {
+        this.font = font;
+    }
+    
+    public TrueTypeFont getFont() {
         if (font != null) return font;
         return defaultFont;
     }
     
     @Override
     public void render() {
-        getFont().drawString(posx, posy, text, 1, 1, anchor);
+        if (enabled) {
+            getFont().drawString(posx, posy, text, 1, 1, anchor);
+        }
+    }
+    
+    public void setEnabled(boolean b) {
+        this.enabled = b;
     }
     
 }

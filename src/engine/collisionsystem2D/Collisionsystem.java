@@ -110,8 +110,8 @@ public class Collisionsystem implements ChangeListener {
     
     private CollisionCheckerResponse entitiesCollides(CollisionEntity e1, CollisionEntity e2) {
 
-        if (e1.bounds instanceof BoundingBox && e2.bounds instanceof BoundingBox) {
-            return CollisionCheckers.collides((BoundingBox)e1.bounds, (BoundingBox)e2.bounds);
+        if (e1.bounds instanceof BoundingRectangle && e2.bounds instanceof BoundingRectangle) {
+            return CollisionCheckers.collides((BoundingRectangle)e1.bounds, (BoundingRectangle)e2.bounds);
         }
         
         if (e1.bounds instanceof BoundingCircle && e2.bounds instanceof BoundingCircle) {
@@ -120,12 +120,12 @@ public class Collisionsystem implements ChangeListener {
         
         
         
-        if (e1.bounds instanceof BoundingBox && e2.bounds instanceof BoundingCircle) {
-            return CollisionCheckers.collides((BoundingBox)e1.bounds, (BoundingCircle)e2.bounds);
+        if (e1.bounds instanceof BoundingRectangle && e2.bounds instanceof BoundingCircle) {
+            return CollisionCheckers.collides((BoundingRectangle)e1.bounds, (BoundingCircle)e2.bounds);
         }
         
-        if (e1.bounds instanceof BoundingCircle && e2.bounds instanceof BoundingBox) {
-            return CollisionCheckers.collides((BoundingCircle)e1.bounds, (BoundingBox)e2.bounds);
+        if (e1.bounds instanceof BoundingCircle && e2.bounds instanceof BoundingRectangle) {
+            return CollisionCheckers.collides((BoundingCircle)e1.bounds, (BoundingRectangle)e2.bounds);
         }
         
         // TODO: Add more

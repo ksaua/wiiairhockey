@@ -12,7 +12,7 @@ import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.TrueTypeFont;
-import engine.collisionsystem2D.BoundingBox;
+import engine.collisionsystem2D.BoundingRectangle;
 import engine.collisionsystem2D.CollisionHandler;
 import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
@@ -54,8 +54,8 @@ public class CollisionNormalTest extends EmptyState implements CollisionHandler 
         Mouse.setCursorPosition(gc.getScreenWidth() / 2, gc.getScreenHeight() / 2);
         
         cs = new Collisionsystem();
-        cs.addEntity(new BoundingBox(mousemoveable, 100, 100));
-        cs.addEntity(new BoundingBox(stationary, 50, 50));
+        cs.addEntity(new BoundingRectangle(mousemoveable, 100, 100));
+        cs.addEntity(new BoundingRectangle(stationary, 50, 50));
         cs.addCollisionHandler(this);
         
         mousemoveable.move(1, 0, 0);

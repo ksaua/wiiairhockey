@@ -2,7 +2,7 @@ package airhockey;
 
 import engine.Entity;
 
-public class AIPaddleController implements Controller {
+public class AIPaddleController implements Updateable {
 
     private Entity paddle;
     private Entity puck;
@@ -16,11 +16,17 @@ public class AIPaddleController implements Controller {
 
     @Override
     public void update(float dt) {
-        if (paddle.getPos().z > puck.getPos().z) {
-            paddle.move(0, 0,-speed * dt);
-        } else {
-            paddle.move(0, 0, speed * dt);
+        if (paddle != null) {
+            if (paddle.getPos().z > puck.getPos().z) {
+                paddle.move(0, 0,-speed * dt);
+            } else {
+                paddle.move(0, 0, speed * dt);
+            }
         }
+    }
+
+    public void setPaddle(Paddle p) {
+        this.paddle = p;
     }
 
 }

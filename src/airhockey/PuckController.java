@@ -8,7 +8,7 @@ import engine.collisionsystem2D.CollisionHandler;
 import engine.collisionsystem2D.CollisionResponse;
 import engine.utils.Line;
 
-public class PuckController implements Controller, CollisionHandler {
+public class PuckController implements Updateable, CollisionHandler {
 
     private Entity puck;
     private Vector3f velocity;

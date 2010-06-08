@@ -24,7 +24,7 @@ public class CollisionCheckers {
     }
 
     
-    public static CollisionCheckerResponse collides(BoundingCircle circle, BoundingBox box) {
+    public static CollisionCheckerResponse collides(BoundingCircle circle, BoundingRectangle box) {
         for (Line line: box.getLines()) {
             if (lineIntersectsCircle(line, circle.getRadius(), circle.getEntity().getPos().x, circle.getEntity().getPos().z)) {
                 return new CollisionCheckerResponse(true, null, NormalCreator.findNormal(line.end, line.start));
@@ -33,7 +33,7 @@ public class CollisionCheckers {
         return new CollisionCheckerResponse(false, null, null);
     }
     
-    public static CollisionCheckerResponse collides(BoundingBox box, BoundingCircle circle) {
+    public static CollisionCheckerResponse collides(BoundingRectangle box, BoundingCircle circle) {
         CollisionCheckerResponse ccr = collides(circle, box);
         Vector2f temp = ccr.normal1;
         ccr.normal1 = ccr.normal2;
@@ -42,7 +42,7 @@ public class CollisionCheckers {
     }
     
 
-    public static CollisionCheckerResponse collides(BoundingBox box1, BoundingBox box2) {
+    public static CollisionCheckerResponse collides(BoundingRectangle box1, BoundingRectangle box2) {
         Vector2f n1 = findCollisionNormal(box1, box2);
         
         // No need to check both if one is zero. Though this makes it be false when one object is completely inside another.
@@ -52,7 +52,7 @@ public class CollisionCheckers {
         return new CollisionCheckerResponse(true, n1, n2); 
     }
 
-    private static Vector2f findCollisionNormal(BoundingBox box1, BoundingBox box2) {
+    private static Vector2f findCollisionNormal(BoundingRectangle box1, BoundingRectangle box2) {
         
         // Find out what vertices is inside for faster reference later
         HashMap<Vector2f, Boolean> verticesInside = new HashMap<Vector2f, Boolean>();
@@ -156,7 +156,7 @@ public class CollisionCheckers {
      * @param vertex
      * @return The normal (if found)
      */
-    private static Vector2f boxContainsVertex(BoundingBox box, Vector2f vertex) {
+    private static Vector2f boxContainsVertex(BoundingRectangle box, Vector2f vertex) {
 
         Vector2f[] vertices = box.getVertices();
 

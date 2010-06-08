@@ -1,7 +1,7 @@
 package tests;
 
 import engine.Entity;
-import engine.collisionsystem2D.BoundingBox;
+import engine.collisionsystem2D.BoundingRectangle;
 import engine.collisionsystem2D.BoundingCircle;
 import engine.collisionsystem2D.CollisionHandler;
 import engine.collisionsystem2D.CollisionResponse;
@@ -19,8 +19,8 @@ public class CollisionTest {
                 System.out.println("Collision occured" + cr);
             }
         });
-        cs.addEntity(new BoundingBox(a, 10, 5));
-        cs.addEntity(new BoundingBox(b, 10, 10));
+        cs.addEntity(new BoundingRectangle(a, 10, 5));
+        cs.addEntity(new BoundingRectangle(b, 10, 10));
 
         a.increaseRotation(0, (float) (Math.PI / 2), 0);
 

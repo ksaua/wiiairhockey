@@ -1,5 +1,5 @@
 package airhockey;
 
-public interface Controller {
+public interface Updateable {
     public void update(float dt);
 }

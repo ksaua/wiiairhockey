@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import engine.Renderable;
-import engine.Texture;
-import engine.TextureLoader;
 import engine.modelloader.ObjLoader;
 
 public class MediaLoader {

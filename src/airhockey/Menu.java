@@ -1,6 +1,7 @@
 package airhockey;
 
 
+import java.awt.Color;
 import java.awt.Font;
 
 import org.lwjgl.input.Keyboard;
@@ -32,10 +33,10 @@ public class Menu extends EmptyState {
     public void init(final Engine e, GraphicContext gc) {
         this.engine = e;
         Font font = new Font("Courier New", Font.BOLD, 32);
-        TrueTypeFont ttf32 = new TrueTypeFont(font, true);
+        TrueTypeFont ttf32 = new TrueTypeFont(font, true, Color.WHITE);
         
         font = new Font("Courier New", Font.BOLD, 20);
-        TrueTypeFont ttf20 = new TrueTypeFont(font, true);
+        TrueTypeFont ttf20 = new TrueTypeFont(font, true, Color.WHITE);
         
         guicontext.addGuiElement(new GuiSprite(
                 new Sprite(TextureLoader.loadTexture("menubg.jpg", false)),
@@ -46,13 +47,13 @@ public class Menu extends EmptyState {
                 gc.getScreenWidth() / 2, gc.getScreenHeight() - 70,
                 TrueTypeFont.ALIGN_CENTER));
         
-        GuiButton start = new GuiButton("Start Game", ttf20,
+        GuiButton start = new GuiButton("Start spill", ttf20,
                 gc.getScreenWidth() / 2, gc.getScreenHeight() - 120);
         
-        GuiButton options = new GuiButton("Options", ttf20,
+        GuiButton options = new GuiButton("Instillinger", ttf20,
                 gc.getScreenWidth() / 2, gc.getScreenHeight() - 145);
         
-        GuiButton exit = new GuiButton("Exit", ttf20,
+        GuiButton exit = new GuiButton("Avslutt", ttf20,
                 gc.getScreenWidth() / 2, 70);
         
         start.addListener(new GuiButtonListener() {
@@ -81,7 +82,7 @@ public class Menu extends EmptyState {
     @Override
     public void render(Engine e, GraphicContext gc) {
         gc.start2dDrawing();
-        guicontext.render(e, gc);
+        guicontext.render(e, gc); 
         
         GL11.glLoadIdentity();
         mouse.draw(Mouse.getX(), Mouse.getY());

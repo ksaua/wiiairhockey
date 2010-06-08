@@ -23,6 +23,7 @@ import org.lwjgl.util.glu.GLU;
 
 /**
  * A TrueType font implementation originally for Slick, edited for Bobjob's Engine
+ * http://lwjgl.org/forum/index.php?topic=2951.0
  * 
  * @original author James Chambers (Jimmy)
  * @original author Jeremy Adams (elias4444)
@@ -50,6 +51,9 @@ public class TrueTypeFont {
 
 	/** Font's height */
 	private int fontHeight = 0;
+	
+	/** Font's Color **/
+    private Color color;
 
 	/** Texture used to cache the font 0-255 characters */
 	private int fontTextureID;
@@ -66,7 +70,6 @@ public class TrueTypeFont {
 	/** The font metrics for our Java AWT font */
 	private FontMetrics fontMetrics;
 
-	
 	private int correctL = 9, correctR = 8;
 	
 	private class IntObject {
@@ -84,20 +87,27 @@ public class TrueTypeFont {
 	}
 
 
-	public TrueTypeFont(Font font, boolean antiAlias, char[] additionalChars) {
+	public TrueTypeFont(Font font, boolean antiAlias, char[] additionalChars, Color color) {
 		this.font = font;
 		this.fontSize = font.getSize()+3;
 		this.antiAlias = antiAlias;
+		this.color = color;
 
 		createSet( additionalChars );
 		
 		fontHeight -= 1;
 		if (fontHeight <= 0) fontHeight = 1;
 	}
+	
+	public TrueTypeFont(Font font, boolean antiAlias, Color color) {
+	    this( font, antiAlias, null, color);
+	}
 
 	public TrueTypeFont(Font font, boolean antiAlias) {
-		this( font, antiAlias, null );
+		this( font, antiAlias, Color.BLACK);
 	}
+	
+	
 	public void setCorrection(boolean on) {
 		if (on) {
 			correctL = 2;
@@ -140,7 +150,7 @@ public class TrueTypeFont {
 		}
 		gt.setFont(font);
 
-		gt.setColor(Color.WHITE);
+		gt.setColor(color);
 		int charx = 3;
 		int chary = 1;
 		gt.drawString(String.valueOf(ch), (charx), (chary)

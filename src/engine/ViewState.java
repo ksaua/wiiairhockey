@@ -30,6 +30,10 @@ public abstract class ViewState extends EmptyState {
         views.add(view);
     }
     
+    public void removeView(View view) {
+        views.remove(view);
+    }
+    
     @Override
     public void render(Engine e, GraphicContext gc) {
         // Render views

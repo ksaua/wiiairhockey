@@ -7,7 +7,7 @@ import engine.utils.ChangeListener;
 import engine.utils.Line;
 import engine.utils.SubscribeableChanges;
 
-public class BoundingBox implements Bounds, ChangeListener {
+public class BoundingRectangle implements Bounds, ChangeListener {
         
     private Vector2f[] vertices;
     private Line[] lines;
@@ -15,7 +15,7 @@ public class BoundingBox implements Bounds, ChangeListener {
     private float width;
     private float height;
 
-    public BoundingBox(Entity entity, float width, float height) {
+    public BoundingRectangle(Entity entity, float width, float height) {
         this.entity = entity;
         this.width = width;
         this.height = height;

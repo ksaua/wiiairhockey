@@ -1,11 +1,7 @@
 package airhockey;
 
-import engine.Wii.ConsistentIrPoint;
-import engine.Wii.Kalman;
 import motej.CalibrationDataReport;
 import motej.Extension;
-import motej.IrCameraMode;
-import motej.IrCameraSensitivity;
 import motej.IrPoint;
 import motej.Mote;
 import motej.event.AccelerometerEvent;
@@ -71,10 +67,39 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
         mote.addExtensionListener(this);
 		mote.setPlayerLeds(new boolean[] {true, false, false, false} );
         mote.activateMotionPlus();
+     
+        wPoints = new WeightedPoint[] {new WeightedPoint(), new WeightedPoint()}; 
 	}
 	
-	IrPoint[] lastPoints = new IrPoint[2];
+//	float pos = 0;
+//	IrPoint[] last_points = new IrPoint[4];
+//	@Override
+//	public void irImageChanged(IrCameraEvent ice) {
+	    // get average movement
+//	    float dMov = 0;
+//	    int amount = 0;
+//	    for (int i = 0; i < 4; i++) {
+//	        if (last_points[i] != null && last_points[i].x != 1023 &&
+//	            ice.getIrPoint(i) != null && ice.getIrPoint(i).x != 1023) {
+//	            dMov = 2 * ((ice.getIrPoint(i).x - last_points[i].x) / 1023.0f);
+//	            amount++;
+//	        }
+//	    }
+//	    
+//	    // Set the last points
+//	    for (int i = 0; i < 4; i++) {
+//	        last_points[i] = ice.getIrPoint(i);
+//	    }
+//	    
+//	    if (amount != dMov) {
+//            pos += dMov / amount;
+//            pos_buffer.goToZ(pos * 15f);
+//        }
+//	}
+	
 	IrPoint[] calibpoints = new IrPoint[2];
+	
+	WeightedPoint[] wPoints;
 	float calibdist;
 	@Override
 	public void irImageChanged(IrCameraEvent ice) {
@@ -82,9 +107,8 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
 	    for (int i = 0; i < 2; i++) points[i] = ice.getIrPoint(i);
 	    
 	    if (!(points[0] == null || points[1] == null ||
-	            lastPoints[0] == null || lastPoints[1] == null ||
-	            points[0].x == 1023 || points[0].y == 1023 ||
-	            points[1].x == 1023 || points[1].y == 1023)) {
+	          points[0].x == 1023 || points[0].y == 1023 ||
+	          points[1].x == 1023 || points[1].y == 1023)) {
 	        
 	        if (points[0].x < points[1].x) {
                 IrPoint temp = points[0];
@@ -92,24 +116,28 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
                 points[1] = temp; 
             }
 	        
-	        IrPoint avgPoint0 = new IrPoint(
-	                (points[0].x + lastPoints[0].x) / 2,
-	                (points[0].y + lastPoints[0].y) / 2);
+	        wPoints[0].pushPoint(points[0]);
+	        wPoints[1].pushPoint(points[1]);
 	        
-	        IrPoint avgPoint1 = new IrPoint(
-                    (points[1].x + lastPoints[1].x) / 2,
-                    (points[1].y + lastPoints[1].y) / 2);
+//	        IrPoint avgPoint0 = new IrPoint(
+//	                (points[0].x + lastPoints[0].x) / 2,
+//	                (points[0].y + lastPoints[0].y) / 2);
+//	        
+//	        IrPoint avgPoint1 = new IrPoint(
+//                    (points[1].x + lastPoints[1].x) / 2,
+//                    (points[1].y + lastPoints[1].y) / 2);
 	        
 	    
-	        double phi = Math.atan2(points[1].y - points[0].y, points[1].x - points[0].x);
+	        double phi = Math.atan2(wPoints[1].getWeightedY() - wPoints[0].getWeightedY(),
+	                wPoints[1].getWeightedX() - wPoints[0].getWeightedX());
 	        double cos = Math.cos(phi);
 	        double sin = Math.sin(phi);
 
-	        double x1 = 2 * (avgPoint0.x / 1023.0d) - 1d;
-	        double y1 = 2 * (avgPoint0.y / 1023.0d) - 1d;
+	        double x1 = 2 * (wPoints[0].getWeightedX() / 1023.0d) - 1d;
+	        double y1 = 2 * (wPoints[0].getWeightedY() / 1023.0d) - 1d;
 
-	        double x2 = 2 * (avgPoint1.x / 1023.0d) - 1d;
-	        double y2 = 2 * (avgPoint1.y / 1023.0d) - 1d;
+	        double x2 = 2 * (wPoints[1].getWeightedX() / 1023.0d) - 1d;
+	        double y2 = 2 * (wPoints[1].getWeightedY() / 1023.0d) - 1d;
 
 	        float posa = (float) (x1 * cos - y1 * sin);
 	        float posb = (float) (x2 * cos - y2 * sin);
@@ -164,8 +192,6 @@ public class WiiPaddleController implements IrCameraListener, CoreButtonListener
 	        pos_buffer.goToYaw((float) -Math.toRadians(yaw) * 2);
 //	        paddle.setYaw((float) -Math.toRadians(yaw) * 2);
 	    }
-	    lastPoints[0] = points[0];
-	    lastPoints[1] = points[1];
 	}
 
 	@Override

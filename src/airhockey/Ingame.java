@@ -14,14 +14,15 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import engine.Camera;
-import engine.EmptyState;
 import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.Light;
 import engine.Renderable;
 import engine.TrueTypeFont;
-import engine.collisionsystem2D.BoundingBox;
+import engine.View;
+import engine.ViewState;
+import engine.collisionsystem2D.BoundingRectangle;
 import engine.collisionsystem2D.BoundingCircle;
 import engine.collisionsystem2D.CollisionHandler;
 import engine.collisionsystem2D.CollisionResponse;
@@ -30,41 +31,62 @@ import engine.gui.GuiContext;
 import engine.gui.GuiText;
 import engine.utils.MouseBuffer;
 
-public class Ingame extends EmptyState implements MoteFinderListener, CoreButtonListener {
-
+public class Ingame extends ViewState implements MoteFinderListener, CoreButtonListener {
+    
     Airhockey game;
 
     LinkedList<Collisionsystem> collisionsystems = new LinkedList<Collisionsystem>();
 
-    LinkedList<Controller> controllers = new LinkedList<Controller>();
-
+    // Things which needs to be updated each frame
+    LinkedList<Updateable> updateables = new LinkedList<Updateable>();
+    
+    // Gameobjects
     Entity table;
-    Paddle[] paddles = new Paddle[2];
-
     Entity puck;
-    PuckController puckController;
+    Paddle[] paddles = new Paddle[2];
     
-    Camera cam;
+    // Controllers
+    String[] controllers = new String[] {"Mus", "AI"};
+    String[] enabledControllers;
     
+    // AI controller
+    AIPaddleController aipaddle;
+    
+    // Handles the input from the Wii
+    PaddlePositionBuffer ppb;
+    
+    // Handles input from mouse
     MouseBuffer mouseBuffer;
     
+    
+    // Puck
+    PuckController puckController;
+    
+    // Is WiiButton A held in?
     boolean calibrating;
 
     int[] scores = new int[2];
     
     GuiContext guicontext = new GuiContext();
     GuiText textHoldA, textPointController, textPaddleMiddle, textScores;
+    
+    View viewSingle, viewSplit0, viewSplit1;
+    Camera camP1, camP2;
+
+    // Is splitscreen activated?
+    boolean splitscreened = false;
+
+    MoteFinder finder;
 
     @Override
     public void init(Engine e, GraphicContext gc) {
         this.game = (Airhockey)e;
         
-        GuiText.defaultFont = new TrueTypeFont(new Font("Courier New", Font.BOLD, 18), true);
-
-        mouseBuffer = new MouseBuffer(10);
+        camP1 = new Camera(-40f, 12f, 0);
+        camP1.lookAt(0, 0, 0);
         
-        cam = new Camera(-40f, 12f, 0);
-        cam.lookAt(0, 0, 0);
+        camP2 = new Camera(40f, 12f, 0);
+        camP2.lookAt(0, 0, 0);
 
         Light light = new Light(GL11.GL_LIGHT0, true, Light.POSITIONAL, 0, 2, 0);
         light.setAmbient(0.5f, 0.5f, 0.5f, 0);
@@ -74,10 +96,14 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         paddles[0] = new Paddle(-24, 1.5f, 0);
         paddles[1] = new Paddle( 24, 1.5f, 0);
         puck = new Entity(-10, 2, 0);
-
+        
+        mouseBuffer = new MouseBuffer(paddles[0], 10);
         puckController = new PuckController(puck);
-        controllers.add(puckController);
-        controllers.add(new AIPaddleController(paddles[1], puck, -6, 6, -12, 0, 2));
+        aipaddle = new AIPaddleController(paddles[1], puck, -6, 6, -12, 0, 2);
+        
+        updateables.add(mouseBuffer);
+        updateables.add(puckController);
+        updateables.add(aipaddle);
 
         Renderable paddle = MediaLoader.loadObj("paddle.obj");
         paddles[0].setRenderComponent(paddle);
@@ -85,8 +111,8 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         table.setRenderComponent(MediaLoader.loadObj("table2.obj"));
         puck.setRenderComponent(MediaLoader.loadObj("puck.obj"));
         
-        BoundingBox bpaddle0 = new BoundingBox(paddles[0], 2, 10);
-        BoundingBox bpaddle1 = new BoundingBox(paddles[1], 2, 10);
+        BoundingRectangle bpaddle0 = new BoundingRectangle(paddles[0], 2, 10);
+        BoundingRectangle bpaddle1 = new BoundingRectangle(paddles[1], 2, 10);
         BoundingCircle bpuck = new BoundingCircle(puck, 1);
         
         Collisionsystem cs = new Collisionsystem();
@@ -102,8 +128,8 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         collisionsystems.add(cs);
         
         // Score changing
-        final BoundingBox bscore0 = new BoundingBox(new Entity(-28.5f, 1.5f, 0), 2, 10);
-        final BoundingBox bscore1 = new BoundingBox(new Entity(28.5f, 1.5f, 0), 2, 10);
+        final BoundingRectangle bscore0 = new BoundingRectangle(new Entity(-28.5f, 1.5f, 0), 2, 10);
+        final BoundingRectangle bscore1 = new BoundingRectangle(new Entity(28.5f, 1.5f, 0), 2, 10);
         CollisionHandler scoreChanger = new CollisionHandler() {
             @Override
             public void collisionOccured(CollisionResponse cr) {
@@ -112,7 +138,7 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
                 } else {
                     scores[1]++;
                 }
-                textScores.setText(scores[0] + " - " + scores[1]);
+                textScores.setText(scores[1] + " - " + scores[0]);
                 resetPuck();
             }
         };
@@ -149,34 +175,47 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         
         guicontext.addGuiElement(textHoldA);
         guicontext.addGuiElement(textScores);
+        
+        
+        // Set up views for singlescreen and splitscreen 
+        viewSingle = new View(gc.getScreenWidth(), gc.getScreenHeight(), 0, 0);
+        viewSplit0 = new View(gc.getScreenWidth() / 2, gc.getScreenHeight(), 0, 0);
+        viewSplit1 = new View(gc.getScreenWidth() / 2, gc.getScreenHeight(), gc.getScreenWidth() / 2, 0);
+        viewSingle.setCamera(camP1);
+        viewSplit0.setCamera(camP1);
+        viewSplit1.setCamera(camP2);
+        
+        addView(viewSingle);
+        setGuiContext(guicontext);
 
-                
-        finder = MoteFinder.getMoteFinder();
-		finder.addMoteFinderListener(this);
-		finder.startDiscovery();
+        try {
+            finder = MoteFinder.getMoteFinder();
+            finder.addMoteFinderListener(this);
+            finder.startDiscovery();
+            ((Airhockey)e).setWiiEnabled(true);
+            enabledControllers = new String[]{"Wii", "Mus", "AI"};
+        } catch (RuntimeException ex){
+            ((Airhockey)e).setWiiEnabled(false);
+            enabledControllers = new String[]{"Mus", "AI"};
+            System.err.println("Fant ikke blåtanmottaker");
+        }
     }
-    MoteFinder finder;
-
+    
     @Override
-    public synchronized void render(Engine e, GraphicContext gc) {
-        cam.transform();
+    public void renderView(View view, Engine e, GraphicContext gc) {
         table.render();
         paddles[0].render();
         paddles[1].render();
-        puck.render();
-        
-        gc.start2dDrawing();
-        guicontext.render(e, gc);
+        puck.render();        
     }
 
     @Override
     public synchronized void update(Engine e, GraphicContext gc, float dt) {
-        paddles[0].move(mouseBuffer.getY() * 0.01f, 0, mouseBuffer.getX() * 0.01f);
         
         for (Collisionsystem cs: collisionsystems)
             cs.check();
 
-        for (Controller c: controllers) c.update(dt);
+        for (Updateable u: updateables) u.update(dt);
     }
 
     @Override
@@ -197,6 +236,7 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
 
     @Override
     public void mouseButtonPressed(int x, int y, int button) {
+        toggleSplitscreen();
         calibrating = !calibrating;
         
         if (!calibrating) {
@@ -215,22 +255,21 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
         if (lwjglId == Keyboard.KEY_ESCAPE) {
             game.setState("menu");
         }
-        
-        if (lwjglId == Keyboard.KEY_SPACE) {
-            System.out.println(paddles[0].getPos());
-        }
 
         if (lwjglId == Keyboard.KEY_A) {
-        	paddles[0].increaseRotation(0,-0.1f, 0);
+            if (getPaddleControlledBy("Mus") != null)
+                getPaddleControlledBy("Mus").increaseRotation(0,-0.1f, 0);
         }
         
         if (lwjglId == Keyboard.KEY_D) {
-        	paddles[0].increaseRotation(0, 0.1f, 0);
+            if (getPaddleControlledBy("Mus") != null)
+                getPaddleControlledBy("Mus").increaseRotation(0, 0.1f, 0);
         }
         
-        // Reset mouse
+        // Reset
         if (lwjglId == Keyboard.KEY_SPACE) {
             Mouse.setCursorPosition(400, 300);
+            puck.setPosition(-10, 2, 0);
             paddles[0].setPosition(-15, 1.5f, 0);
         }
     }
@@ -242,8 +281,8 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
 
 	@Override
 	public void moteFound(Mote mote) {
-	    PaddlePositionBuffer ppb = new PaddlePositionBuffer(paddles[0], 60, 40, 12f);
-	    controllers.add(ppb);
+	    ppb = new PaddlePositionBuffer(paddles[0], 60, 40, 12f);
+	    updateables.add(ppb);
 		new WiiPaddleController(mote, ppb);
 		mote.addCoreButtonListener(this);
 		finder.stopDiscovery();
@@ -268,4 +307,73 @@ public class Ingame extends EmptyState implements MoteFinderListener, CoreButton
 		    resetPuck();
 		}
 	}
+	
+	public void toggleSplitscreen() {
+	    splitscreened = !splitscreened;
+	    if (splitscreened) {
+	        addView(viewSplit0);
+	        addView(viewSplit1);
+	        removeView(viewSingle);
+	    } else {
+	        addView(viewSingle);
+	        removeView(viewSplit0);
+	        removeView(viewSplit1);
+	    }
+	}
+	
+	public Paddle getPaddleControlledBy(String controller) {
+        for (int i = 0; i < controllers.length; i++) {
+            if (controllers[i].equals(controller)) return paddles[i];
+        }
+        return null;
+    }
+
+    public String getController(int i) {
+        return controllers[i];
+    }
+
+    public void changeController(int i) {
+        if (enabledControllers.length == 2) {
+            String old = controllers[0];
+            controllers[0] = controllers[1];
+            controllers[1] = old;
+            
+            setPaddleControllerToPaddle(controllers[0], paddles[0]);
+            setPaddleControllerToPaddle(controllers[1], paddles[1]);
+        } else {
+            setPaddleControllerToPaddle(controllers[i], null);
+            controllers[i] = getNextControllerType(controllers[i]);
+            setPaddleControllerToPaddle(controllers[i], paddles[i]);
+            
+            int other = i == 1? 0 : 1;
+            if (controllers[i].equals(controllers[other])) {
+                controllers[other] = getNextControllerType(controllers[other]);
+                setPaddleControllerToPaddle(getNextControllerType(controllers[other]), paddles[other]);
+            }
+            
+        }
+    }
+    private String getNextControllerType(String s) {
+        for (int i = 0; i < enabledControllers.length; i++) {
+            if (enabledControllers[i].equals(s)) {
+                if (i == enabledControllers.length - 1) {
+                    return enabledControllers[0];
+                } else {
+                    return enabledControllers[i + 1];
+                }
+            }
+        }
+        System.out.println("Wrong");
+        return s;
+    }
+
+    private void setPaddleControllerToPaddle(String controller, Paddle paddle) {
+        if (controller.equals("AI")) {
+            aipaddle.setPaddle(paddle);
+        } else if (controller.equals("Wii")) {
+            ppb.setPaddle(paddle);
+        } else if (controller.equals("Mus")) {
+            mouseBuffer.setPaddle(paddle);
+        }
+    }
 }

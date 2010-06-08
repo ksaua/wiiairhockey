@@ -1,7 +1,7 @@
 package engine;
 
+import java.awt.Font;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
@@ -10,16 +10,15 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Timer;
 
-import engine.events.Event;
 import engine.events.KeyboardEventCreator;
 import engine.events.MouseEventCreator;
+import engine.gui.GuiText;
 import engine.utils.SmoothTimer;
 
 public class Engine {
     private HashMap<String, State> states;
     private State currentState;
     private boolean running;
-    private LinkedList<Event> events;
     private String title;
 
     // Theese will poll the input and create events based on the polling
@@ -29,7 +28,6 @@ public class Engine {
     public Engine(String title) {
         this.title = title;
         states = new HashMap<String, State>();
-        events = new LinkedList<Event>();
         running = true;
 
 
@@ -74,7 +72,7 @@ public class Engine {
 
         GL11.glShadeModel(GL11.GL_SMOOTH);
 
-        GL11.glClearColor(0,0.5f,0,0);
+        GL11.glClearColor(1, 1, 1, 1);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -87,11 +85,14 @@ public class Engine {
         for (State state: states.values()) {
             state.init(this, graphiccontext);
         }
+        
+        // Set default font
+        GuiText.defaultFont = new TrueTypeFont(new Font("Courier New", Font.BOLD, 18), true);
     }
 
     GraphicContext graphiccontext = new GraphicContext();
 
-    private static int SLEEPLESS_UPDATES = 1;
+    private static int SLEEPLESS_UPDATES = 10;
     
     public void loop() {
         Timer timer = new Timer();
@@ -166,6 +167,10 @@ public class Engine {
             currentState = state;
         }
         states.put(id, state);
+    }
+    
+    public State getState(String name) {
+        return states.get(name);
     }
 
     public void setState(String id) {

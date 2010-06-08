@@ -4,8 +4,6 @@ import java.util.LinkedList;
 
 import org.lwjgl.input.Keyboard;
 
-import engine.State;
-
 public class KeyboardEventCreator {
     LinkedList<KeyboardListener> keyboardListeners = new LinkedList<KeyboardListener>();
 

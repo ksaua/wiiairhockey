@@ -12,7 +12,7 @@ import engine.Engine;
 import engine.Entity;
 import engine.GraphicContext;
 import engine.TrueTypeFont;
-import engine.collisionsystem2D.BoundingBox;
+import engine.collisionsystem2D.BoundingRectangle;
 import engine.collisionsystem2D.CollisionHandler;
 import engine.collisionsystem2D.CollisionResponse;
 import engine.collisionsystem2D.Collisionsystem;
